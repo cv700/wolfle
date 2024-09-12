@@ -7,13 +7,21 @@
     <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+    <style>
+        @keyframes wolfHowl {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+    </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
         const EmojiWerewolfGame = () => {
-            const peopleEmojis = ['👨', '👩', '👱', '👴', '👵', '👲', '🧔', '👳‍♂️', '👳‍♀️', '👮‍♂️', '👮‍♀️', '👷‍♂️', '👷‍♀️', '💂‍♂️', '💂‍♀️', '🕵️‍♂️', '🕵️‍♀️', '👨‍⚕️', '👩‍⚕️', '👨‍🌾', '👩‍🌾', '👨‍🍳', '👩‍🍳', '👨‍🎓', '👩‍🎓', '👨‍🏫', '👩‍🏫', '👨‍🏭', '👩‍🏭', '👨‍💻', '👩‍💻', '👨‍🎤', '👩‍🎤', '👨‍🎨', '👩‍🎨', '👨‍✈️', '👩‍✈️', '👨‍🚀', '👩‍🚀', '👨‍🚒', '👩‍🚒'];
+            const peopleEmojis = ['🎃', '🧙‍♂️', '🦹‍♀️', '👨‍🔬', '💂‍♀️', '🕵️‍♂️', '👰', '🤡', '👨‍🍳', '🧝‍♀️', '👸', '🎃', '👨', '👩', '👱', '👴', '👵', '👲', '🧔', '👳‍♂️', '👳‍♀️', '👮‍♂️', '👮‍♀️', '👷‍♂️', '👷‍♀️', '💂‍♂️', '💂‍♀️', '🕵️‍♀️', '👨‍⚕️', '👩‍⚕️', '👨‍🌾', '👩‍🌾', '👨‍🎓', '👩‍🎓', '👨‍🏫', '👩‍🏫', '👨‍🏭', '👩‍🏭', '👨‍💻', '👩‍💻', '👨‍🎤', '👩‍🎤', '👨‍🎨', '👩‍🎨', '👨‍✈️', '👩‍✈️', '👨‍🚀', '👩‍🚀', '👨‍🚒', '👩‍🚒'];
             const arrowEmojis = ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️'];
             const gridSize = 7;
 
@@ -21,63 +29,95 @@
             const [werewolfIndex, setWerewolfIndex] = React.useState(-1);
             const [lastClickedIndex, setLastClickedIndex] = React.useState(-1);
             const [lastClickTime, setLastClickTime] = React.useState(0);
-            const [timer, setTimer] = React.useState(0);
+            const [timer, setTimer] = React.useState(60);
+            const [score, setScore] = React.useState(0);
+            const [showWolfAnimation, setShowWolfAnimation] = React.useState(false);
             const [isGameOver, setIsGameOver] = React.useState(false);
             const [message, setMessage] = React.useState('');
+            const [gameState, setGameState] = React.useState('home');
+            const [highScore, setHighScore] = React.useState(() => {
+                const saved = localStorage.getItem('highScore');
+                return saved !== null ? parseInt(saved, 10) : 0;
+            });
+            const [error, setError] = React.useState(null);
 
             React.useEffect(() => {
                 initGame();
             }, []);
+            
 
             React.useEffect(() => {
-                if (!isGameOver) {
+                if (gameState === 'playing' && timer > 0) {
                     const interval = setInterval(() => {
-                        setTimer(prevTimer => prevTimer + 1);
+                        setTimer(prevTimer => prevTimer - 1);
                     }, 1000);
                     return () => clearInterval(interval);
+                } else if (timer === 0) {
+                    endGame(false);
                 }
-            }, [isGameOver]);
+            }, [gameState, timer]);
 
             const initGame = () => {
-                const totalTiles = gridSize * gridSize;
-                const selectedEmojis = peopleEmojis.sort(() => 0.5 - Math.random()).slice(0, 25);
-                const allEmojis = [...selectedEmojis.slice(0, 24), ...selectedEmojis.slice(0, 24)];
-                const newWerewolfIndex = Math.floor(Math.random() * totalTiles);
-                allEmojis.splice(newWerewolfIndex, 0, selectedEmojis[24]);
-                
-                setGameBoard(allEmojis.map(emoji => ({ 
-                    emoji, 
-                    isClicked: false,
-                    isMatched: false
-                })));
-                setWerewolfIndex(newWerewolfIndex);
-                setIsGameOver(false);
-                setTimer(0);
-                setMessage('');
+                try {
+                    const totalTiles = gridSize * gridSize;
+                    if (totalTiles > peopleEmojis.length) {
+                        throw new Error("Not enough emojis for the grid size");
+                    }
+                    const selectedEmojis = peopleEmojis.sort(() => 0.5 - Math.random()).slice(0, 25);
+                    const allEmojis = [...selectedEmojis.slice(0, 24), ...selectedEmojis.slice(0, 24)];
+                    const newWerewolfIndex = Math.floor(Math.random() * totalTiles);
+                    allEmojis.splice(newWerewolfIndex, 0, selectedEmojis[24]);
+                    
+                    setGameBoard(allEmojis.map(emoji => ({ 
+                        emoji, 
+                        isClicked: false,
+                        isMatched: false
+                    })));
+                    setWerewolfIndex(newWerewolfIndex);
+                    setIsGameOver(false);
+                    setTimer(60);
+                    setScore(0);
+                    setMessage('');
+                    setGameState('playing');
+                    setError(null); // Clear any previous errors
+                } catch (err) {
+                    console.error("Error initializing game:", err);
+                    setError("Failed to start the game. Please try again.");
+                }
             };
 
             const handleTileClick = (index) => {
-                if (isGameOver || gameBoard[index].isMatched) return;
+                try {
+                    if (gameState !== 'playing' || gameBoard[index].isMatched) return;
 
-                const currentTime = new Date().getTime();
-                if (currentTime - lastClickTime < 300 && lastClickedIndex === index) {
-                    // Double click detected
-                    if (index === werewolfIndex) {
-                        endGame(true);
+                    const currentTime = new Date().getTime();
+                    if (currentTime - lastClickTime < 300 && lastClickedIndex === index) {
+                        // Double click detected
+                        if (index === werewolfIndex) {
+                            setShowWolfAnimation(true);
+                            setTimeout(() => {
+                                setShowWolfAnimation(false);
+                                setScore(prevScore => prevScore + 1);
+                                initGame();
+                            }, 1000);
+                        } else {
+                            endGame(false);
+                        }
                     } else {
-                        endGame(false);
+                        // Single click
+                        setGameBoard(prevBoard => {
+                            const newBoard = [...prevBoard];
+                            newBoard[index] = {...newBoard[index], isClicked: !newBoard[index].isClicked};
+                            return newBoard;
+                        });
+                        checkMatch(index);
                     }
-                } else {
-                    // Single click
-                    setGameBoard(prevBoard => {
-                        const newBoard = [...prevBoard];
-                        newBoard[index] = {...newBoard[index], isClicked: !newBoard[index].isClicked};
-                        return newBoard;
-                    });
-                    checkMatch(index);
+                    setLastClickTime(currentTime);
+                    setLastClickedIndex(index);
+                } catch (err) {
+                    console.error("Error handling tile click:", err);
+                    setError("An error occurred. Please try again.");
                 }
-                setLastClickTime(currentTime);
-                setLastClickedIndex(index);
             };
 
             const checkMatch = (index) => {
@@ -126,22 +166,192 @@
             };
 
             const endGame = (isWin) => {
-                setIsGameOver(true);
-                setMessage(isWin ? "You found the werewolf! You win!" : "Wrong guess! Game over.");
+                setGameState('gameOver');
+                setMessage(isWin ? "Time's up!" : "Wrong guess! Game over.");
                 setGameBoard(prevBoard => {
                     const newBoard = [...prevBoard];
                     newBoard[werewolfIndex] = {...newBoard[werewolfIndex], emoji: '🐺'};
                     return newBoard;
                 });
+                if (score > highScore) {
+                    setHighScore(score);
+                    localStorage.setItem('highScore', score.toString());
+                }
             };
 
+            const shareScore = () => {
+                try {
+                    const shareText = `I found ${score} werewolves in Emoji Werewolf! Can you beat my score? Play now!`;
+                    const shareUrl = window.location.href;
+
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'Emoji Werewolf Score',
+                            text: shareText,
+                            url: shareUrl,
+                        }).then(() => console.log('Successful share'))
+                        .catch((error) => {
+                            console.error('Error sharing:', error);
+                            setError("Failed to share. Please try again.");
+                        });
+                    } else {
+                        const fallbackUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+                        window.open(fallbackUrl, '_blank');
+                    }
+                } catch (err) {
+                    console.error("Error sharing score:", err);
+                    setError("Failed to share score. Please try again.");
+                }
+            };
+
+            const startGame = () => {
+                initGame();
+                setGameState('playing');
+            };
+
+            const WolfAnimation = () => (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    zIndex: 1000,
+                }}>
+                    <div style={{fontSize: '10em', animation: 'wolfHowl 1s ease-in-out'}}>🐺</div>
+                </div>
+            );
+
+            const GameOverScreen = () => (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    zIndex: 1000,
+                }}>
+                    <h2>Game Over</h2>
+                    <p>Your score: {score}</p>
+                    <p>High score: {highScore}</p>
+                    <button onClick={initGame} style={{
+                        fontSize: '1.2em',
+                        padding: '10px 20px',
+                        background: '#ff6600',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        marginTop: '20px',
+                    }}>
+                        Play Again
+                    </button>
+                    <button onClick={shareScore} style={{
+                        fontSize: '1.2em',
+                        padding: '10px 20px',
+                        background: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        marginTop: '10px',
+                    }}>
+                        Share Score
+                    </button>
+                </div>
+            );
+
+            const ErrorMessage = () => (
+                error && (
+                    <div style={{
+                        backgroundColor: '#ffcccc',
+                        color: '#cc0000',
+                        padding: '10px',
+                        margin: '10px 0',
+                        borderRadius: '5px',
+                        fontWeight: 'bold'
+                    }}>
+                        {error}
+                    </div>
+                )
+            );
+
+            const HomeScreen = () => (
+                <div style={{
+                    background: '#FFA500', // Orange background
+                    height: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    color: '#000000', // Black text for contrast
+                    fontFamily: '"Creepster", cursive'
+                }}>
+                    <h1 style={{fontSize: '4em', textShadow: '2px 2px 4px #000000'}}>🐺 Emoji Werewolf 🎃</h1>
+                    <p style={{fontSize: '1.5em', marginBottom: '20px'}}>Can you find the werewolf hiding among the villagers?</p>
+                    <div style={{fontSize: '3em', marginBottom: '20px'}}>
+                        👻 🦇 🕷️ 🕸️ 🧙‍♂️ 🦹‍♀️ 👨‍🔬 🤡 🧝‍♀️ 👸
+                    </div>
+                    <button 
+                        onClick={startGame}
+                        style={{
+                            fontSize: '1.5em',
+                            padding: '10px 20px',
+                            background: '#ff6600',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 10px #ff9900'
+                        }}
+                    >
+                        Start Game
+                    </button>
+                </div>
+            );
+
+            if (gameState === 'home') {
+                return <HomeScreen />;
+            }
+
             return (
-                <div className="game-container" style={{fontFamily: 'Arial, sans-serif', textAlign: 'center', maxWidth: '600px', margin: '0 auto', padding: '20px'}}>
+                <div className="game-container" style={{
+                    fontFamily: 'Arial, sans-serif', 
+                    textAlign: 'center', 
+                    maxWidth: '600px', 
+                    margin: '0 auto', 
+                    padding: '20px',
+                    backgroundColor: '#FFA500', // Orange background
+                    minHeight: '100vh', // Ensure it covers the full viewport height
+                    boxSizing: 'border-box' // Include padding in the height calculation
+                }}>
                     <h1>Emoji Werewolf Game</h1>
+                    <ErrorMessage />
                     <div style={{height: '20px', marginTop: '10px', fontSize: '18px', fontWeight: 'bold'}}>
                         Time: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
                     </div>
-                    <div className="game-board" style={{display: 'inline-grid', gap: '5px', margin: '20px 0', gridTemplateColumns: `repeat(${gridSize}, 1fr)`}}>
+                    <div style={{height: '20px', marginTop: '10px', fontSize: '18px', fontWeight: 'bold'}}>
+                        Score: {score}
+                    </div>
+                    <div className="game-board" style={{
+                        display: 'inline-grid', 
+                        gap: '5px', 
+                        margin: '20px 0', 
+                        gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+                        backgroundColor: '#FFF', // White background for the game board
+                        padding: '10px',
+                        borderRadius: '10px'
+                    }}>
                         {gameBoard.map((tile, index) => (
                             <div 
                                 key={index} 
@@ -167,7 +377,8 @@
                     <div style={{height: '20px', marginTop: '10px', fontSize: '18px', fontWeight: 'bold'}}>
                         {message}
                     </div>
-                    <button onClick={initGame} style={{marginTop: '10px', padding: '5px 10px', fontSize: '16px'}}>New Game</button>
+                    {showWolfAnimation && <WolfAnimation />}
+                    {gameState === 'gameOver' && <GameOverScreen />}
                 </div>
             );
         };
