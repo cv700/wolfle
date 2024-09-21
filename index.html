@@ -127,7 +127,7 @@
         const EmojiWerewolfGame = () => {
             const gridSize = 7; // Ensure this is set to 7
             const festiveEmojis = [
-                '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '⛄', 
+                '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🦌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒'
             ];
             const werewolfEmoji = '🐺';
@@ -202,60 +202,74 @@
             const handleTileClick = (tile) => {
                 if (gameState !== 'playing' || tile.isMatched) return;
 
-                if (selectedTiles.length === 0) {
-                    // First tap: select the tile
-                    const newBoard = gameBoard.map(t => 
-                        t.id === tile.id ? { ...t, isSelected: true } : t
-                    );
-                    setGameBoard(newBoard);
-                    setSelectedTiles([tile]);
-                } else if (selectedTiles.length === 1) {
-                    if (tile.id === selectedTiles[0].id) {
-                        // Double-tap to accuse the werewolf
-                        if (tile.id === werewolfIndex) {
-                            setScore(prev => prev + 1);
-                            const newBoard = gameBoard.map(t => ({ ...t, isMatched: true, isSelected: false }));
-                            setGameBoard(newBoard);
-                            setTimeout(() => {
-                                initializeBoard();
-                            }, 1000);
-                        } else {
-                            endGame(false);
-                        }
-                    } else {
-                        const firstTile = selectedTiles[0];
-                        const newBoard = gameBoard.map(t => {
-                            if (t.id === tile.id) {
-                                return { ...t, isSelected: true };
-                            }
-                            return t;
-                        });
-                        setGameBoard(newBoard);
-                        setSelectedTiles([firstTile, tile]);
+                const now = new Date().getTime();
+                const lastClickTime = tile.lastClickTime || 0;
+                const timeBetweenClicks = now - lastClickTime;
 
-                        if (tile.emoji === firstTile.emoji) {
-                            const updatedBoard = newBoard.map(t => {
-                                if (t.id === tile.id || t.id === firstTile.id) {
-                                    const deltaX = werewolfIndex % gridSize - t.id % gridSize;
-                                    const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(t.id / gridSize);
-                                    const arrow = getArrowDirection(deltaX, deltaY);
-                                    return { ...t, isMatched: true, isSelected: false, emoji: arrow };
+                if (timeBetweenClicks < 300) {  // Double-tap threshold (300ms)
+                    // Double-tap detected - attempt to accuse
+                    if (tile.id === werewolfIndex) {
+                        setScore(prev => prev + 1);
+                        const newBoard = gameBoard.map(t => ({ ...t, isMatched: true, isSelected: false }));
+                        setGameBoard(newBoard);
+                        setTimeout(() => {
+                            initializeBoard();
+                        }, 1000);
+                    } else {
+                        endGame(false);
+                    }
+                } else {
+                    // Single tap - select or attempt to match
+                    if (selectedTiles.length === 0) {
+                        // First selection
+                        const newBoard = gameBoard.map(t => 
+                            t.id === tile.id ? { ...t, isSelected: true, lastClickTime: now } : t
+                        );
+                        setGameBoard(newBoard);
+                        setSelectedTiles([tile]);
+                    } else if (selectedTiles.length === 1) {
+                        // Second selection
+                        const firstTile = selectedTiles[0];
+                        if (tile.id !== firstTile.id) {
+                            const newBoard = gameBoard.map(t => {
+                                if (t.id === tile.id) {
+                                    return { ...t, isSelected: true, lastClickTime: now };
                                 }
                                 return t;
                             });
-                            setGameBoard(updatedBoard);
-                            setSelectedTiles([]);
-                        } else {
-                            setTimeout(() => {
+                            setGameBoard(newBoard);
+                            setSelectedTiles([firstTile, tile]);
+
+                            if (tile.emoji === firstTile.emoji) {
+                                // Match found
                                 const updatedBoard = newBoard.map(t => {
                                     if (t.id === tile.id || t.id === firstTile.id) {
-                                        return { ...t, isSelected: false };
+                                        const deltaX = werewolfIndex % gridSize - t.id % gridSize;
+                                        const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(t.id / gridSize);
+                                        const arrow = getArrowDirection(deltaX, deltaY);
+                                        return { ...t, isMatched: true, isSelected: false, emoji: arrow };
                                     }
                                     return t;
                                 });
                                 setGameBoard(updatedBoard);
                                 setSelectedTiles([]);
-                            }, 1000);
+                            } else {
+                                // No match
+                                setTimeout(() => {
+                                    const updatedBoard = newBoard.map(t => {
+                                        if (t.id === tile.id || t.id === firstTile.id) {
+                                            return { ...t, isSelected: false };
+                                        }
+                                        return t;
+                                    });
+                                    setGameBoard(updatedBoard);
+                                    setSelectedTiles([]);
+                                }, 1000);
+                            }
+                        } else {
+                            // Clicked the same tile twice, but not fast enough for a double-tap
+                            // Just keep it selected
+                            setSelectedTiles([tile]);
                         }
                     }
                 }
