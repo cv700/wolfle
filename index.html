@@ -186,7 +186,7 @@
                 // Create the board
                 const board = Array(totalTiles).fill(null).map((_, index) => ({
                     id: index,
-                    emoji: shuffledAllEmojis[index],
+                    emoji: index === werewolfPosition ? shuffledEmojis[numPairs] : shuffledAllEmojis[index],
                     isMatched: false,
                     isSelected: false,
                 }));
@@ -326,7 +326,7 @@
                 <div className="popup">
                     <div className="popup-content">
                         <h1>Emoji Werewolf Game</h1>
-                        <p>Tap pairs to replace them with arrows pointing to the werewolf. Double-tap an emoji to accuse it of being the werewolf. The game ends after one minute.</p>
+                        <p>Tap pairs of villagers to replace them with arrows pointing to the werewolf. Double-tap an emoji to accuse it of being the werewolf. The game ends after one minute.</p>
                         <button onClick={startGame}>New Game</button>
                     </div>
                 </div>
@@ -385,5 +385,6 @@
     </script>
 </body>
 </html>
+
 
 
