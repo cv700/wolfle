@@ -145,7 +145,6 @@
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect } = React;
 
@@ -158,19 +157,19 @@
 
             const [gameBoard, setGameBoard] = useState([]);
             const [selectedTiles, setSelectedTiles] = useState([]);
-            const [score, setScore] = useState(0);
-            const [timer, setTimer] = useState(60);
             const [gameState, setGameState] = useState('home');
+            const [timer, setTimer] = useState(60);
+            const [score, setScore] = useState(0);
             const [werewolfIndex, setWerewolfIndex] = useState(null);
 
             useEffect(() => {
                 if (gameState === 'playing' && timer > 0) {
-                    const interval = setInterval(() => {
+                    const timerId = setInterval(() => {
                         setTimer(prev => prev - 1);
                     }, 1000);
-                    return () => clearInterval(interval);
+                    return () => clearInterval(timerId);
                 } else if (timer === 0) {
-                    setGameState('gameOver');
+                    endGame(false);
                 }
             }, [gameState, timer]);
 
@@ -180,7 +179,8 @@
                 const shuffledEmojis = [...festiveEmojis].sort(() => 0.5 - Math.random());
                 const selectedEmojis = shuffledEmojis.slice(0, numPairs);
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
-                const allEmojis = [...pairedEmojis, werewolfEmoji];
+                const oddOneOut = shuffledEmojis[numPairs];
+                const allEmojis = [...pairedEmojis, oddOneOut];
                 const finalEmojis = allEmojis.sort(() => 0.5 - Math.random());
 
                 const board = finalEmojis.map((emoji, index) => ({
@@ -190,7 +190,7 @@
                     isSelected: false,
                 }));
 
-                const wolfIdx = board.findIndex(tile => tile.emoji === werewolfEmoji);
+                const wolfIdx = board.findIndex(tile => tile.emoji === oddOneOut);
                 setWerewolfIndex(wolfIdx);
 
                 setGameBoard(board);
@@ -202,6 +202,24 @@
                 setScore(0);
                 setSelectedTiles([]);
                 initializeBoard();
+            };
+
+            const getArrowDirection = (deltaX, deltaY) => {
+                if (deltaY < 0) {
+                    if (deltaX < 0) return '↖️';
+                    if (deltaX === 0) return '⬆️';
+                    return '↗️';
+                }
+                if (deltaY === 0) {
+                    if (deltaX < 0) return '⬅️';
+                    if (deltaX > 0) return '➡️';
+                }
+                if (deltaY > 0) {
+                    if (deltaX < 0) return '↙️';
+                    if (deltaX === 0) return '⬇️';
+                    return '↘️';
+                }
+                return ''; // This should never happen
             };
 
             const handleTileClick = (tile) => {
@@ -216,13 +234,15 @@
                 } else if (selectedTiles.length === 1) {
                     if (tile.id === selectedTiles[0].id) {
                         // Double-tap to accuse the werewolf
-                        if (tile.emoji === werewolfEmoji) {
+                        if (tile.id === werewolfIndex) {
                             setScore(prev => prev + 1);
                             const newBoard = gameBoard.map(t => ({ ...t, isMatched: true, isSelected: false }));
                             setGameBoard(newBoard);
                             setTimeout(() => {
                                 initializeBoard();
                             }, 1000);
+                        } else {
+                            endGame(false);
                         }
                     } else {
                         const firstTile = selectedTiles[0];
@@ -238,7 +258,10 @@
                         if (tile.emoji === firstTile.emoji) {
                             const updatedBoard = newBoard.map(t => {
                                 if (t.id === tile.id || t.id === firstTile.id) {
-                                    return { ...t, isMatched: true, isSelected: false };
+                                    const deltaX = werewolfIndex % gridSize - t.id % gridSize;
+                                    const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(t.id / gridSize);
+                                    const arrow = getArrowDirection(deltaX, deltaY);
+                                    return { ...t, isMatched: true, isSelected: false, emoji: arrow };
                                 }
                                 return t;
                             });
@@ -257,6 +280,16 @@
                             }, 1000);
                         }
                     }
+                }
+            };
+
+            const endGame = (won) => {
+                setGameState('gameOver');
+                if (!won) {
+                    const updatedBoard = gameBoard.map(tile => 
+                        tile.id === werewolfIndex ? { ...tile, emoji: werewolfEmoji } : tile
+                    );
+                    setGameBoard(updatedBoard);
                 }
             };
 
@@ -313,6 +346,5 @@
         ReactDOM.render(<EmojiWerewolfGame />, document.getElementById('root'));
     </script>
 </body>
-</html>
 
 
