@@ -137,7 +137,7 @@
         const EmojiWerewolfGame = () => {
             const gridSize = 7;
             const festiveEmojis = [
-                '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '⛄', 
+                '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🦌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒',
                 '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '👨‍🚀', '👩‍🏭', '👨‍💻', '👩‍💼', '👨‍🏫',
                 '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨‍✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️',
@@ -308,12 +308,6 @@
                         }
                     }
                 }
-
-                // Update the lastClickTime for this tile
-                const updatedBoard = gameBoard.map(t => 
-                    t.id === tile.id ? { ...t, lastClickTime: now } : t
-                );
-                setGameBoard(updatedBoard);
             };
 
             const endGame = (won) => {
@@ -367,6 +361,7 @@
                                     ${tile.isMatched ? 'matched' : ''} 
                                     ${tile.emoji === '🙌' ? 'celebrate' : ''}`
                                 }
+                                onClick={() => handleTileClick(tile)}
                                 onTouchStart={(e) => {
                                     e.preventDefault(); // Prevent default touch behavior
                                 }}
@@ -374,7 +369,6 @@
                                     e.preventDefault();
                                     handleTileClick(tile);
                                 }}
-                                onClick={() => handleTileClick(tile)} // Keep this for desktop
                             >
                                 {tile.emoji}
                             </div>
@@ -391,6 +385,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
