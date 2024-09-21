@@ -152,7 +152,7 @@
         const EmojiWerewolfGame = () => {
             const gridSize = 7;
             const festiveEmojis = [
-                '🎃', '👻', '🧟', '🧛', '🧙', '🧝', '🦄', '🥷','👨‍🚒', '🎅', '🤶', '👮', '🕵️‍♀️', '👵', '👨‍🦳', '👩🏾‍🦱', '👨‍🍳', '👩‍🔬', '👨‍🎨', '🧑‍⚖️', '🧌','⛄', '🧛‍♀️', '🧙‍♀️', '🧝‍♀️', '🧞‍♀️', '🧜‍♀️', '🦹'
+                '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🦌', '⛄', '🧞', '🧜', '🧛‍♀️', '🧙‍♀️', '🧝‍♀️', '🧞‍♀️', '🧜‍♀️', '🦹'
             ];
             const werewolfEmoji = '🐺';
 
@@ -161,6 +161,7 @@
             const [score, setScore] = useState(0);
             const [timer, setTimer] = useState(60);
             const [gameState, setGameState] = useState('home');
+            const [werewolfIndex, setWerewolfIndex] = useState(null);
 
             useEffect(() => {
                 if (gameState === 'playing' && timer > 0) {
@@ -188,6 +189,9 @@
                     isMatched: false,
                     isSelected: false,
                 }));
+
+                const wolfIdx = board.findIndex(tile => tile.emoji === werewolfEmoji);
+                setWerewolfIndex(wolfIdx);
 
                 setGameBoard(board);
             };
@@ -310,4 +314,5 @@
     </script>
 </body>
 </html>
+
 
