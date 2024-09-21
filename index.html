@@ -127,6 +127,22 @@
         .tile.celebrate {
             animation: celebrate 0.5s ease-in-out infinite;
         }
+
+        .tile.accusation-mode {
+            box-shadow: 0 0 10px 5px #ff0000;
+        }
+
+        .accuse-indicator {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ff0000;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
     </style>
 </head>
 <body>
@@ -150,6 +166,7 @@
             const [timer, setTimer] = useState(60);
             const [score, setScore] = useState(0);
             const [werewolfIndex, setWerewolfIndex] = useState(null);
+            const [accusationMode, setAccusationMode] = useState(null);
 
             useEffect(() => {
                 if (gameState === 'playing' && timer > 0) {
@@ -173,8 +190,14 @@
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
+                // Select a unique emoji for the werewolf
+                let werewolfEmoji = shuffledEmojis[numPairs];
+                while (selectedEmojis.includes(werewolfEmoji)) {
+                    werewolfEmoji = shuffledEmojis[Math.floor(Math.random() * shuffledEmojis.length)];
+                }
+                
                 // Add the odd one out (werewolf)
-                const allEmojis = [...pairedEmojis, shuffledEmojis[numPairs]];
+                const allEmojis = [...pairedEmojis, werewolfEmoji];
                 
                 // Shuffle all emojis to randomize positions
                 const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
@@ -186,14 +209,14 @@
                 // Create the board
                 const board = Array(totalTiles).fill(null).map((_, index) => ({
                     id: index,
-                    emoji: index === werewolfPosition ? shuffledEmojis[numPairs] : shuffledAllEmojis[index],
+                    emoji: index === werewolfPosition ? werewolfEmoji : shuffledAllEmojis[index],
                     isMatched: false,
                     isSelected: false,
                 }));
 
                 setGameBoard(board);
 
-                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition);
+                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", werewolfEmoji);
             };
 
             const startGame = () => {
@@ -223,18 +246,10 @@
             };
 
             const handleTileClick = (tile) => {
-                console.log("Tile clicked:", tile.id, "Werewolf index:", werewolfIndex);
                 if (gameState !== 'playing' || tile.isMatched) return;
 
-                const now = new Date().getTime();
-                const lastClickTime = tile.lastClickTime || 0;
-                const timeBetweenClicks = now - lastClickTime;
-
-                console.log("Time between clicks:", timeBetweenClicks);
-
-                if (timeBetweenClicks < 300) {  // Double-tap threshold (300ms)
-                    console.log("Double-tap detected");
-                    // Double-tap detected - attempt to accuse
+                if (accusationMode === tile.id) {
+                    // Accuse the tile
                     if (tile.id === werewolfIndex) {
                         console.log("Correct accusation");
                         setScore(prev => prev + 1);
@@ -247,28 +262,29 @@
                         setGameBoard(newBoard);
                         setTimeout(() => {
                             initializeBoard();
+                            setAccusationMode(null);
                         }, 1000);
                     } else {
                         console.log("Incorrect accusation");
                         endGame(false);
                     }
                 } else {
-                    console.log("Single tap detected");
-                    // Single tap - select or attempt to match
+                    // Enter accusation mode or handle normal selection
                     if (selectedTiles.length === 0) {
-                        // First selection
+                        // First selection, enter accusation mode
+                        setAccusationMode(tile.id);
                         const newBoard = gameBoard.map(t => 
-                            t.id === tile.id ? { ...t, isSelected: true, lastClickTime: now } : t
+                            t.id === tile.id ? { ...t, isSelected: true } : { ...t, isSelected: false }
                         );
                         setGameBoard(newBoard);
                         setSelectedTiles([tile]);
                     } else if (selectedTiles.length === 1) {
-                        // Second selection
+                        // Second selection, attempt to match
                         const firstTile = selectedTiles[0];
                         if (tile.id !== firstTile.id) {
                             const newBoard = gameBoard.map(t => {
                                 if (t.id === tile.id) {
-                                    return { ...t, isSelected: true, lastClickTime: now };
+                                    return { ...t, isSelected: true };
                                 }
                                 return t;
                             });
@@ -301,12 +317,9 @@
                                     setSelectedTiles([]);
                                 }, 1000);
                             }
-                        } else {
-                            // Clicked the same tile twice, but not fast enough for a double-tap
-                            // Just keep it selected
-                            setSelectedTiles([tile]);
                         }
                     }
+                    setAccusationMode(null);
                 }
             };
 
@@ -359,6 +372,7 @@
                                 className={`tile 
                                     ${tile.isSelected ? 'selected' : ''} 
                                     ${tile.isMatched ? 'matched' : ''} 
+                                    ${accusationMode === tile.id ? 'accusation-mode' : ''}
                                     ${tile.emoji === '🙌' ? 'celebrate' : ''}`
                                 }
                                 onClick={() => handleTileClick(tile)}
@@ -371,6 +385,7 @@
                                 }}
                             >
                                 {tile.emoji}
+                                {accusationMode === tile.id && <div className="accuse-indicator">Tap to accuse</div>}
                             </div>
                         ))}
                     </div>
