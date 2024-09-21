@@ -12,7 +12,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: orange;
+            background-color: #3D9970; /* Zombie green color */
             background-image: url('https://example.com/spiderwebs.png'); /* Replace with actual URL */
             background-size: cover;
             background-repeat: no-repeat;
@@ -128,7 +128,7 @@
             const gridSize = 7;
             const festiveEmojis = [
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🦌', '⛄', 
-                '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒'
+                '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '‍🚒'
             ];
             const werewolfEmoji = '🐺';
 
@@ -167,6 +167,10 @@
                 // Shuffle all emojis to randomize positions
                 const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
 
+                // Randomly select the werewolf position
+                const werewolfPosition = Math.floor(Math.random() * totalTiles);
+                setWerewolfIndex(werewolfPosition);
+
                 // Create the board
                 const board = shuffledAllEmojis.map((emoji, index) => ({
                     id: index,
@@ -174,10 +178,6 @@
                     isMatched: false,
                     isSelected: false,
                 }));
-
-                // Find the position of the odd one out (werewolf)
-                const werewolfPosition = board.findIndex(tile => !pairedEmojis.includes(tile.emoji));
-                setWerewolfIndex(werewolfPosition);
 
                 setGameBoard(board);
             };
@@ -329,12 +329,9 @@
                                 className={`tile ${tile.isSelected ? 'selected' : ''} ${tile.isMatched ? 'matched' : ''}`}
                                 onClick={() => handleTileClick(tile)}
                                 onTouchStart={(e) => {
-                                    e.preventDefault(); // Prevent default touch behavior
+                                    e.preventDefault();
                                     handleTileClick(tile);
                                 }}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => e.key === 'Enter' && handleTileClick(tile)}
                             >
                                 {tile.emoji}
                             </div>
