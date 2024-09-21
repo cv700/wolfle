@@ -99,46 +99,22 @@
 
         .popup-content h1 {
             margin-bottom: 20px;
-            font-size: 1.8rem;
-        }
-
-        .popup-content p {
-            margin-bottom: 30px;
-            font-size: 1rem;
         }
 
         .popup-content button {
             padding: 10px 20px;
             font-size: 1rem;
-            background-color: #ff6600;
-            color: #fff;
+            background-color: #4caf50;
+            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .popup-content button:hover {
-            background-color: #e65c00;
         }
 
         /* Responsive Adjustments */
         @media (max-width: 600px) {
             .tile {
                 font-size: 1.5rem;
-            }
-
-            .popup-content h1 {
-                font-size: 1.5rem;
-            }
-
-            .popup-content p {
-                font-size: 0.9rem;
-            }
-
-            .popup-content button {
-                font-size: 0.9rem;
-                padding: 8px 16px;
             }
         }
     </style>
@@ -151,7 +127,8 @@
         const EmojiWerewolfGame = () => {
             const gridSize = 7; // Ensure this is set to 7
             const festiveEmojis = [
-                '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🦌', '⛄', '🧞', '🧜', '🧛‍♀️', '🧙‍♀️', '🧝‍♀️', '🧞‍♀️', '🧜‍♀️', '🦹'
+                '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '⛄', 
+                '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒'
             ];
             const werewolfEmoji = '🐺';
 
@@ -226,6 +203,7 @@
                 if (gameState !== 'playing' || tile.isMatched) return;
 
                 if (selectedTiles.length === 0) {
+                    // First tap: select the tile
                     const newBoard = gameBoard.map(t => 
                         t.id === tile.id ? { ...t, isSelected: true } : t
                     );
@@ -327,7 +305,10 @@
                                 key={tile.id} 
                                 className={`tile ${tile.isSelected ? 'selected' : ''} ${tile.isMatched ? 'matched' : ''}`}
                                 onClick={() => handleTileClick(tile)}
-                                onTouchStart={() => handleTileClick(tile)}
+                                onTouchStart={(e) => {
+                                    e.preventDefault(); // Prevent default touch behavior
+                                    handleTileClick(tile);
+                                }}
                                 role="button"
                                 tabIndex={0}
                                 onKeyDown={(e) => e.key === 'Enter' && handleTileClick(tile)}
@@ -347,4 +328,3 @@
     </script>
 </body>
 </html>
-
