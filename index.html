@@ -128,7 +128,9 @@
             const gridSize = 7;
             const festiveEmojis = [
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🦌', '⛄', 
-                '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '‍🚒'
+                '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒',
+                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '👨‍🚀', '👩‍🏭', '👨‍💻', '👩‍💼', '👨‍🏫',
+                '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨‍✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️', '🧑‍🤝‍🧑'
             ];
             const werewolfEmoji = '🐺';
 
@@ -172,14 +174,16 @@
                 setWerewolfIndex(werewolfPosition);
 
                 // Create the board
-                const board = shuffledAllEmojis.map((emoji, index) => ({
+                const board = Array(totalTiles).fill(null).map((_, index) => ({
                     id: index,
-                    emoji: emoji,
+                    emoji: shuffledAllEmojis[index],
                     isMatched: false,
                     isSelected: false,
                 }));
 
                 setGameBoard(board);
+
+                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition);
             };
 
             const startGame = () => {
@@ -314,6 +318,8 @@
                 </div>
             );
 
+            console.log("Rendering board:", gameBoard.length, "Werewolf position:", werewolfIndex);
+
             return (
                 <div className="game-container">
                     <h1>Emoji Werewolf Game</h1>
@@ -348,3 +354,4 @@
     </script>
 </body>
 </html>
+
