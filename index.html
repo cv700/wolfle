@@ -125,7 +125,7 @@
         const { useState, useEffect } = React;
 
         const EmojiWerewolfGame = () => {
-            const gridSize = 7; // Ensure this is set to 7
+            const gridSize = 7;
             const festiveEmojis = [
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🦌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒'
@@ -151,24 +151,33 @@
             }, [gameState, timer]);
 
             const initializeBoard = () => {
-                const totalTiles = gridSize * gridSize;
-                const numPairs = Math.floor((totalTiles - 1) / 2);
+                const totalTiles = gridSize * gridSize; // 49 tiles
+                const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
                 const shuffledEmojis = [...festiveEmojis].sort(() => 0.5 - Math.random());
+                
+                // Select emojis for pairs
                 const selectedEmojis = shuffledEmojis.slice(0, numPairs);
+                
+                // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
-                const oddOneOut = shuffledEmojis[numPairs];
-                const allEmojis = [...pairedEmojis, oddOneOut];
-                const finalEmojis = allEmojis.sort(() => 0.5 - Math.random());
+                
+                // Add the odd one out (werewolf)
+                const allEmojis = [...pairedEmojis, shuffledEmojis[numPairs]];
+                
+                // Shuffle all emojis to randomize positions
+                const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
 
-                const board = finalEmojis.map((emoji, index) => ({
+                // Create the board
+                const board = shuffledAllEmojis.map((emoji, index) => ({
                     id: index,
-                    emoji,
+                    emoji: emoji,
                     isMatched: false,
                     isSelected: false,
                 }));
 
-                const wolfIdx = board.findIndex(tile => tile.emoji === oddOneOut);
-                setWerewolfIndex(wolfIdx);
+                // Find the position of the odd one out (werewolf)
+                const werewolfPosition = board.findIndex(tile => !pairedEmojis.includes(tile.emoji));
+                setWerewolfIndex(werewolfPosition);
 
                 setGameBoard(board);
             };
