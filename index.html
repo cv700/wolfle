@@ -12,7 +12,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: orange; /* Changed back to orange */
+            background-color: #3D9970; /* Zombie green color */
             background-image: url('https://example.com/spiderwebs.png'); /* Replace with actual URL */
             background-size: cover;
             background-repeat: no-repeat;
@@ -117,6 +117,16 @@
                 font-size: 1.5rem;
             }
         }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .tile.celebrate {
+            animation: celebrate 0.5s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
@@ -213,25 +223,37 @@
             };
 
             const handleTileClick = (tile) => {
+                console.log("Tile clicked:", tile.id, "Werewolf index:", werewolfIndex);
                 if (gameState !== 'playing' || tile.isMatched) return;
 
                 const now = new Date().getTime();
                 const lastClickTime = tile.lastClickTime || 0;
                 const timeBetweenClicks = now - lastClickTime;
 
+                console.log("Time between clicks:", timeBetweenClicks);
+
                 if (timeBetweenClicks < 300) {  // Double-tap threshold (300ms)
+                    console.log("Double-tap detected");
                     // Double-tap detected - attempt to accuse
                     if (tile.id === werewolfIndex) {
+                        console.log("Correct accusation");
                         setScore(prev => prev + 1);
-                        const newBoard = gameBoard.map(t => ({ ...t, isMatched: true, isSelected: false }));
+                        const newBoard = gameBoard.map(t => ({ 
+                            ...t, 
+                            isMatched: true, 
+                            isSelected: false,
+                            emoji: '🙌' // Change all tiles to celebrate hands
+                        }));
                         setGameBoard(newBoard);
                         setTimeout(() => {
                             initializeBoard();
                         }, 1000);
                     } else {
+                        console.log("Incorrect accusation");
                         endGame(false);
                     }
                 } else {
+                    console.log("Single tap detected");
                     // Single tap - select or attempt to match
                     if (selectedTiles.length === 0) {
                         // First selection
@@ -289,13 +311,15 @@
             };
 
             const endGame = (won) => {
-                setGameState('gameOver');
-                if (!won) {
-                    const updatedBoard = gameBoard.map(tile => 
-                        tile.id === werewolfIndex ? { ...tile, emoji: werewolfEmoji } : tile
-                    );
-                    setGameBoard(updatedBoard);
-                }
+                setTimeout(() => {
+                    setGameState('gameOver');
+                    if (!won) {
+                        const updatedBoard = gameBoard.map(tile => 
+                            tile.id === werewolfIndex ? { ...tile, emoji: werewolfEmoji } : tile
+                        );
+                        setGameBoard(updatedBoard);
+                    }
+                }, 100); // Small delay to prevent accidental game overs
             };
 
             const HomeScreen = () => (
@@ -332,9 +356,16 @@
                         {gameBoard.map(tile => (
                             <div 
                                 key={tile.id} 
-                                className={`tile ${tile.isSelected ? 'selected' : ''} ${tile.isMatched ? 'matched' : ''}`}
+                                className={`tile 
+                                    ${tile.isSelected ? 'selected' : ''} 
+                                    ${tile.isMatched ? 'matched' : ''} 
+                                    ${tile.emoji === '🙌' ? 'celebrate' : ''}`
+                                }
                                 onClick={() => handleTileClick(tile)}
                                 onTouchStart={(e) => {
+                                    e.preventDefault(); // Prevent default touch behavior
+                                }}
+                                onTouchEnd={(e) => {
                                     e.preventDefault();
                                     handleTileClick(tile);
                                 }}
