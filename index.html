@@ -319,7 +319,7 @@
                 const allEmojis = [...pairedEmojis, oddOneOut];
                 
                 // Shuffle all emojis to randomize positions
-                const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
+                const shuffledAllEmojis = allEmojis.sort(() => Math.random() - 0.5);
 
                 // Find the index of the werewolf emoji in the shuffled array
                 const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
