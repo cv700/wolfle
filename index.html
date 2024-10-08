@@ -315,41 +315,24 @@
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Randomly select the werewolf position
-                const werewolfPosition = Math.floor(Math.random() * totalTiles);
+                // Add the werewolf emoji
+                const allEmojis = [...pairedEmojis, oddOneOut];
+                
+                // Shuffle all emojis to randomize positions
+                const shuffledAllEmojis = allEmojis.sort(() => Math.random() - 0.5);
+
+                // Find the index of the werewolf emoji in the shuffled array
+                const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
                 setWerewolfIndex(werewolfPosition);
 
                 // Create the board
-                const board = Array(totalTiles).fill(null).map((_, index) => {
-                    if (index === werewolfPosition) {
-                        return {
-                            id: index,
-                            emoji: oddOneOut,
-                            isMatched: false,
-                            isSelected: false,
-                            lastClickTime: 0
-                        };
-                    } else {
-                        const randomPairedEmoji = pairedEmojis.pop() || oddOneOut;
-                        return {
-                            id: index,
-                            emoji: randomPairedEmoji,
-                            isMatched: false,
-                            isSelected: false,
-                            lastClickTime: 0
-                        };
-                    }
-                });
-
-                // Shuffle the non-werewolf tiles to ensure random distribution of pairs
-                for (let i = board.length - 1; i > 0; i--) {
-                    if (i !== werewolfPosition) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        if (j !== werewolfPosition) {
-                            [board[i], board[j]] = [board[j], board[i]];
-                        }
-                    }
-                }
+                const board = Array(totalTiles).fill(null).map((_, index) => ({
+                    id: index,
+                    emoji: shuffledAllEmojis[index],
+                    isMatched: false,
+                    isSelected: false,
+                    lastClickTime: 0
+                }));
 
                 setGameBoard(board);
 
@@ -383,12 +366,11 @@
                 }
             };
 
-            const handleTileClick = (clickedTile) => {
-                if (gameState !== 'playing' || clickedTile.isMatched) return;
+            const handleTileClick = (tile) => {
+                if (gameState !== 'playing' || tile.isMatched) return;
 
-                const newBoard = gameBoard.map(tile => 
-                    tile.id === clickedTile.id ? { ...tile, isSelected: !tile.isSelected } : tile
-                );
+                const newBoard = [...gameBoard];
+                const clickedTile = newBoard[tile.id];
 
                 // Check for double click (accusation)
                 const now = new Date().getTime();
@@ -409,7 +391,7 @@
                         ));
                     }, 1000);
 
-                    if (clickedTile.id === werewolfIndex) {
+                    if (tile.id === werewolfIndex) {
                         // Correct accusation
                         setTimeout(() => {
                             setGameBoard(prev => prev.map(t => ({
@@ -429,7 +411,7 @@
                         setTimeout(() => {
                             setGameBoard(prev => prev.map(t => ({
                                 ...t,
-                                isMatched: t.id === werewolfIndex || t.id === clickedTile.id,
+                                isMatched: t.id === werewolfIndex || t.id === tile.id,
                                 isSelected: false
                             })));
                             endGame(false);
@@ -517,9 +499,9 @@
                     <div className="game-board" style={{
                         gridTemplateColumns: `repeat(${gridSize}, 1fr)`
                     }}>
-                        {gameBoard.map((tile, index) => (
+                        {gameBoard.map(tile => (
                             <div 
-                                key={index} 
+                                key={tile.id} 
                                 className={`tile 
                                     ${tile.isSelected ? 'selected' : ''} 
                                     ${tile.isMatched ? 'matched' : ''}
@@ -528,7 +510,7 @@
                                 }
                                 onClick={() => handleTileClick(tile)}
                             >
-                                {tile.isMatched || tile.isSelected ? tile.emoji : '?'}
+                                {tile.emoji}
                             </div>
                         ))}
                     </div>
