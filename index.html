@@ -253,12 +253,18 @@
                 const now = new Date().getTime();
                 if (clickedTile.lastClickTime && (now - clickedTile.lastClickTime < 300)) {
                     // Double click detected - handle accusation
+                    const werewolfTile = newBoard[werewolfIndex];
+                    werewolfTile.emoji = werewolfEmoji; // Reveal the werewolf emoji
+                    werewolfTile.isMatched = true;
+
                     if (tile.id === werewolfIndex) {
                         // Correct accusation
                         newBoard.forEach(t => {
                             t.isMatched = true;
                             t.isSelected = false;
-                            t.emoji = '🙌'; // Celebrate
+                            if (t.id !== werewolfIndex) {
+                                t.emoji = '🙌'; // Celebrate
+                            }
                         });
                         setScore(prev => prev + 1);
                         setTimeout(() => {
@@ -266,6 +272,8 @@
                         }, 1000);
                     } else {
                         // Incorrect accusation
+                        clickedTile.isMatched = true;
+                        clickedTile.isSelected = false;
                         endGame(false);
                     }
                     setSelectedTiles([]);
