@@ -143,6 +143,15 @@
             border-radius: 3px;
             font-size: 0.8em;
         }
+
+        @keyframes flash {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0; }
+        }
+
+        .tile.flashing {
+            animation: flash 0.5s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -254,27 +263,45 @@
                 if (clickedTile.lastClickTime && (now - clickedTile.lastClickTime < 300)) {
                     // Double click detected - handle accusation
                     const werewolfTile = newBoard[werewolfIndex];
-                    werewolfTile.emoji = werewolfEmoji; // Reveal the werewolf emoji
+                    werewolfTile.emoji = werewolfEmoji; // Replace odd one out with werewolf emoji
                     werewolfTile.isMatched = true;
+                    werewolfTile.isFlashing = true; // Add a flashing state
+
+                    // Start flashing animation
+                    setGameBoard(newBoard);
+
+                    // Stop flashing after 1 second
+                    setTimeout(() => {
+                        setGameBoard(prev => prev.map(t => 
+                            t.id === werewolfIndex ? { ...t, isFlashing: false } : t
+                        ));
+                    }, 1000);
 
                     if (tile.id === werewolfIndex) {
                         // Correct accusation
-                        newBoard.forEach(t => {
-                            t.isMatched = true;
-                            t.isSelected = false;
-                            if (t.id !== werewolfIndex) {
-                                t.emoji = '🙌'; // Celebrate
-                            }
-                        });
-                        setScore(prev => prev + 1);
+                        setTimeout(() => {
+                            setGameBoard(prev => prev.map(t => ({
+                                ...t,
+                                isMatched: true,
+                                isSelected: false,
+                                emoji: t.id === werewolfIndex ? werewolfEmoji : '🙌' // Celebrate
+                            })));
+                            setScore(prev => prev + 1);
+                        }, 1000);
+
                         setTimeout(() => {
                             initializeBoard();
-                        }, 1000);
+                        }, 2000);
                     } else {
                         // Incorrect accusation
-                        clickedTile.isMatched = true;
-                        clickedTile.isSelected = false;
-                        endGame(false);
+                        setTimeout(() => {
+                            setGameBoard(prev => prev.map(t => ({
+                                ...t,
+                                isMatched: t.id === werewolfIndex || t.id === tile.id,
+                                isSelected: false
+                            })));
+                            endGame(false);
+                        }, 1000);
                     }
                     setSelectedTiles([]);
                 } else {
@@ -368,7 +395,8 @@
                                 key={tile.id} 
                                 className={`tile 
                                     ${tile.isSelected ? 'selected' : ''} 
-                                    ${tile.isMatched ? 'matched' : ''} 
+                                    ${tile.isMatched ? 'matched' : ''}
+                                    ${tile.isFlashing ? 'flashing' : ''}
                                     ${tile.emoji === '🙌' ? 'celebrate' : ''}`
                                 }
                                 onClick={() => handleTileClick(tile)}
