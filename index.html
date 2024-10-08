@@ -9,9 +9,12 @@
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
     <!-- Babel for JSX transformation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Add this line to import the Creepster font -->
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            /* Change the font-family to Creepster, with a fallback to cursive */
+            font-family: 'Creepster', cursive;
             background-color: #ff9b64; /* Pumpkin color */
             background-image: 
                 linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -64,6 +67,8 @@
             cursor: pointer;
             user-select: none;
             transition: transform 0.2s;
+            /* Keep Arial as the font for emojis */
+            font-family: Arial, sans-serif;
         }
 
         .tile.selected {
@@ -164,6 +169,12 @@
         .tile.flashing {
             animation: flash 0.5s linear infinite;
         }
+
+        /* Add styles for the score to make it more visible */
+        #score {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -254,7 +265,7 @@
                 }
                 if (deltaY === 0) {
                     if (deltaX < 0) return '⬅️';
-                    if (deltaX > 0) return '➡️';
+                    if (deltaX > 0) return '➡��';
                     return ''; // This case (0,0) should never happen as it would be the werewolf tile
                 }
                 if (deltaY > 0) {
