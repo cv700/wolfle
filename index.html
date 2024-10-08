@@ -256,12 +256,12 @@
             </div>
         );
 
-        const EndGameScreen = ({ score, onReturnHome, onShare, backgroundColor }) => (
+        const EndGameScreen = ({ score, onNewGame, onShare, backgroundColor }) => (
             <div className="end-game-screen" style={{ backgroundColor }}>
                 <h2>Game Over!</h2>
                 <p>Your score: {score}</p>
                 <button onClick={onShare}>Share Score</button>
-                <button onClick={onReturnHome}>Return to Home</button>
+                <button onClick={onNewGame}>New Game</button>
             </div>
         );
 
@@ -459,14 +459,8 @@
                 // Any other end game logic...
             };
 
-            const returnToHome = () => {
-                setGameState('home');
-                setBackgroundColor(getRandomColor());
-            };
-
             const shareScore = () => {
                 // Implement sharing functionality
-                // This could open a share dialog or copy a message to clipboard
                 const shareMessage = `I scored ${score} points in Wolfdle.Com!`;
                 if (navigator.share) {
                     navigator.share({
@@ -486,7 +480,7 @@
             }
 
             if (gameState === 'endGame') {
-                return <EndGameScreen score={score} onReturnHome={returnToHome} onShare={shareScore} backgroundColor={backgroundColor} />;
+                return <EndGameScreen score={score} onNewGame={startGame} onShare={shareScore} backgroundColor={backgroundColor} />;
             }
 
             return (
