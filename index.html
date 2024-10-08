@@ -315,24 +315,41 @@
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Add the werewolf emoji
-                const allEmojis = [...pairedEmojis, oddOneOut];
-                
-                // Shuffle all emojis to randomize positions
-                const shuffledAllEmojis = allEmojis.sort(() => Math.random() - 0.5);
-
-                // Find the index of the werewolf emoji in the shuffled array
-                const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
+                // Randomly select the werewolf position
+                const werewolfPosition = Math.floor(Math.random() * totalTiles);
                 setWerewolfIndex(werewolfPosition);
 
                 // Create the board
-                const board = Array(totalTiles).fill(null).map((_, index) => ({
-                    id: index,
-                    emoji: shuffledAllEmojis[index],
-                    isMatched: false,
-                    isSelected: false,
-                    lastClickTime: 0
-                }));
+                const board = Array(totalTiles).fill(null).map((_, index) => {
+                    if (index === werewolfPosition) {
+                        return {
+                            id: index,
+                            emoji: werewolfEmoji,
+                            isMatched: false,
+                            isSelected: false,
+                            lastClickTime: 0
+                        };
+                    } else {
+                        const randomPairedEmoji = pairedEmojis.pop() || oddOneOut;
+                        return {
+                            id: index,
+                            emoji: randomPairedEmoji,
+                            isMatched: false,
+                            isSelected: false,
+                            lastClickTime: 0
+                        };
+                    }
+                });
+
+                // Shuffle the non-werewolf tiles to ensure random distribution of pairs
+                for (let i = board.length - 1; i > 0; i--) {
+                    if (i !== werewolfPosition) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        if (j !== werewolfPosition) {
+                            [board[i], board[j]] = [board[j], board[i]];
+                        }
+                    }
+                }
 
                 setGameBoard(board);
 
