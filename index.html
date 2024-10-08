@@ -245,79 +245,66 @@
             const handleTileClick = (tile) => {
                 if (gameState !== 'playing' || tile.isMatched) return;
 
-                if (accusationMode === tile.id) {
-                    // Accuse the tile
+                const newBoard = [...gameBoard];
+                const clickedTile = newBoard[tile.id];
+
+                // Toggle selection of the clicked tile
+                clickedTile.isSelected = !clickedTile.isSelected;
+
+                if (clickedTile.isSelected) {
+                    // If this tile is now selected, add it to selectedTiles
+                    setSelectedTiles(prev => [...prev, clickedTile]);
+                } else {
+                    // If this tile is now deselected, remove it from selectedTiles
+                    setSelectedTiles(prev => prev.filter(t => t.id !== clickedTile.id));
+                }
+
+                // Check for accusation (double click/tap)
+                if (selectedTiles.find(t => t.id === tile.id)) {
+                    // This tile was already selected, so this is a double click/tap
                     if (tile.id === werewolfIndex) {
-                        console.log("Correct accusation");
+                        // Correct accusation
+                        newBoard.forEach(t => {
+                            t.isMatched = true;
+                            t.isSelected = false;
+                            t.emoji = '🙌'; // Celebrate
+                        });
                         setScore(prev => prev + 1);
-                        const newBoard = gameBoard.map(t => ({ 
-                            ...t, 
-                            isMatched: true, 
-                            isSelected: false, 
-                            emoji: '🙌' // Change all tiles to celebrate hands
-                        }));
-                        setGameBoard(newBoard);
                         setTimeout(() => {
                             initializeBoard();
-                            setAccusationMode(null);
                         }, 1000);
                     } else {
-                        console.log("Incorrect accusation");
+                        // Incorrect accusation
                         endGame(false);
                     }
-                } else {
-                    // Enter accusation mode or handle normal selection
-                    if (selectedTiles.length === 0) {
-                        // First selection, enter accusation mode
-                        setAccusationMode(tile.id);
-                        const newBoard = gameBoard.map(t => 
-                            t.id === tile.id ? { ...t, isSelected: true } : { ...t, isSelected: false }
-                        );
-                        setGameBoard(newBoard);
-                        setSelectedTiles([tile]);
-                    } else if (selectedTiles.length === 1) {
-                        // Second selection, attempt to match
-                        const firstTile = selectedTiles[0];
-                        if (tile.id !== firstTile.id) {
-                            const newBoard = gameBoard.map(t => {
-                                if (t.id === tile.id) {
-                                    return { ...t, isSelected: true };
-                                }
-                                return t;
-                            });
-                            setGameBoard(newBoard);
-                            setSelectedTiles([firstTile, tile]);
-
-                            if (tile.emoji === firstTile.emoji) {
-                                // Match found
-                                const updatedBoard = newBoard.map(t => {
-                                    if (t.id === tile.id || t.id === firstTile.id) {
-                                        const deltaX = werewolfIndex % gridSize - t.id % gridSize;
-                                        const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(t.id / gridSize);
-                                        const arrow = getArrowDirection(deltaX, deltaY);
-                                        return { ...t, isMatched: true, isSelected: false, emoji: arrow };
-                                    }
-                                    return t;
-                                });
-                                setGameBoard(updatedBoard);
-                                setSelectedTiles([]);
-                            } else {
-                                // No match
-                                setTimeout(() => {
-                                    const updatedBoard = newBoard.map(t => {
-                                        if (t.id === tile.id || t.id === firstTile.id) {
-                                            return { ...t, isSelected: false };
-                                        }
-                                        return t;
-                                    });
-                                    setGameBoard(updatedBoard);
-                                    setSelectedTiles([]);
-                                }, 1000);
-                            }
-                        }
+                    setSelectedTiles([]);
+                } else if (selectedTiles.length === 2) {
+                    // Check for a match
+                    const [firstTile, secondTile] = selectedTiles;
+                    if (firstTile.emoji === secondTile.emoji) {
+                        // Match found
+                        [firstTile, secondTile].forEach(t => {
+                            const matchedTile = newBoard[t.id];
+                            matchedTile.isMatched = true;
+                            matchedTile.isSelected = false;
+                            const deltaX = werewolfIndex % gridSize - t.id % gridSize;
+                            const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(t.id / gridSize);
+                            matchedTile.emoji = getArrowDirection(deltaX, deltaY);
+                        });
+                    } else {
+                        // No match, deselect after a delay
+                        setTimeout(() => {
+                            setGameBoard(prev => prev.map(t => 
+                                t.id === firstTile.id || t.id === secondTile.id 
+                                    ? { ...t, isSelected: false } 
+                                    : t
+                            ));
+                        }, 1000);
                     }
-                    setAccusationMode(null);
+                    setSelectedTiles([]);
                 }
+
+                setGameBoard(newBoard);
             };
 
             const endGame = (won) => {
@@ -369,7 +356,6 @@
                                 className={`tile 
                                     ${tile.isSelected ? 'selected' : ''} 
                                     ${tile.isMatched ? 'matched' : ''} 
-                                    ${accusationMode === tile.id ? 'accusation-mode' : ''}
                                     ${tile.emoji === '🙌' ? 'celebrate' : ''}`
                                 }
                                 onClick={() => handleTileClick(tile)}
@@ -382,7 +368,6 @@
                                 }}
                             >
                                 {tile.emoji}
-                                {accusationMode === tile.id && <div className="accuse-indicator">Tap to accuse</div>}
                             </div>
                         ))}
                     </div>
@@ -397,7 +382,6 @@
     </script>
 </body>
 </html>
-
 
 
 
