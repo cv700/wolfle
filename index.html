@@ -209,6 +209,7 @@
                     emoji: shuffledAllEmojis[index],
                     isMatched: false,
                     isSelected: false,
+                    lastClickTime: 0
                 }));
 
                 setGameBoard(board);
@@ -248,17 +249,10 @@
                 const newBoard = [...gameBoard];
                 const clickedTile = newBoard[tile.id];
 
-                // Toggle selection of the clicked tile
-                clickedTile.isSelected = !clickedTile.isSelected;
-
-                if (clickedTile.isSelected) {
-                    setSelectedTiles(prev => [...prev, clickedTile]);
-                } else {
-                    setSelectedTiles(prev => prev.filter(t => t.id !== clickedTile.id));
-                }
-
-                // Check for accusation (double click/tap)
-                if (selectedTiles.find(t => t.id === tile.id)) {
+                // Check for double click (accusation)
+                const now = new Date().getTime();
+                if (clickedTile.lastClickTime && (now - clickedTile.lastClickTime < 300)) {
+                    // Double click detected - handle accusation
                     if (tile.id === werewolfIndex) {
                         // Correct accusation
                         newBoard.forEach(t => {
@@ -275,29 +269,44 @@
                         endGame(false);
                     }
                     setSelectedTiles([]);
-                } else if (selectedTiles.length === 2) {
-                    // Check for a match
-                    const [firstTile, secondTile] = selectedTiles;
-                    if (firstTile.emoji === secondTile.emoji) {
-                        // Match found
-                        [firstTile.id, secondTile.id].forEach(id => {
-                            const matchedTile = newBoard[id];
-                            matchedTile.isMatched = true;
-                            matchedTile.isSelected = false;
-                            const deltaX = werewolfIndex % gridSize - id % gridSize;
-                            const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(id / gridSize);
-                            matchedTile.emoji = getArrowDirection(deltaX, deltaY);
-                        });
-                        setScore(prev => prev + 1);
+                } else {
+                    // Single click - handle selection and matching
+                    clickedTile.isSelected = !clickedTile.isSelected;
+                    clickedTile.lastClickTime = now;
+
+                    if (clickedTile.isSelected) {
+                        setSelectedTiles(prev => [...prev, clickedTile]);
                     } else {
-                        // No match, deselect after a delay
-                        setTimeout(() => {
-                            newBoard[firstTile.id].isSelected = false;
-                            newBoard[secondTile.id].isSelected = false;
-                            setGameBoard(newBoard);
-                        }, 1000);
+                        setSelectedTiles(prev => prev.filter(t => t.id !== clickedTile.id));
                     }
-                    setSelectedTiles([]);
+
+                    // Check for a match if we have two selected tiles
+                    if (selectedTiles.length === 1) {
+                        const [firstTile] = selectedTiles;
+                        if (firstTile.emoji === clickedTile.emoji && firstTile.id !== clickedTile.id) {
+                            // Match found
+                            [firstTile.id, clickedTile.id].forEach(id => {
+                                const matchedTile = newBoard[id];
+                                matchedTile.isMatched = true;
+                                matchedTile.isSelected = false;
+                                const deltaX = werewolfIndex % gridSize - id % gridSize;
+                                const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(id / gridSize);
+                                matchedTile.emoji = getArrowDirection(deltaX, deltaY);
+                            });
+                            setScore(prev => prev + 1);
+                            setSelectedTiles([]);
+                        } else if (selectedTiles.length === 2) {
+                            // No match, deselect after a delay
+                            setTimeout(() => {
+                                setGameBoard(prev => prev.map(t => 
+                                    selectedTiles.some(selected => selected.id === t.id)
+                                        ? { ...t, isSelected: false }
+                                        : t
+                                ));
+                                setSelectedTiles([]);
+                            }, 1000);
+                        }
+                    }
                 }
 
                 setGameBoard(newBoard);
