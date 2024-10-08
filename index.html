@@ -252,16 +252,13 @@
                 clickedTile.isSelected = !clickedTile.isSelected;
 
                 if (clickedTile.isSelected) {
-                    // If this tile is now selected, add it to selectedTiles
                     setSelectedTiles(prev => [...prev, clickedTile]);
                 } else {
-                    // If this tile is now deselected, remove it from selectedTiles
                     setSelectedTiles(prev => prev.filter(t => t.id !== clickedTile.id));
                 }
 
                 // Check for accusation (double click/tap)
                 if (selectedTiles.find(t => t.id === tile.id)) {
-                    // This tile was already selected, so this is a double click/tap
                     if (tile.id === werewolfIndex) {
                         // Correct accusation
                         newBoard.forEach(t => {
@@ -291,6 +288,7 @@
                             const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(t.id / gridSize);
                             matchedTile.emoji = getArrowDirection(deltaX, deltaY);
                         });
+                        setScore(prev => prev + 1);
                     } else {
                         // No match, deselect after a delay
                         setTimeout(() => {
