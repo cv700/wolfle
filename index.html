@@ -15,7 +15,7 @@
         body {
             /* Change the font-family to Creepster, with a fallback to cursive */
             font-family: 'Creepster', cursive;
-            background-color: #ff9b64; /* Pumpkin color */
+            background-color: #a1ff1d; /* zombie green */
             background-image: 
                 linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -200,6 +200,31 @@
             cursor: pointer;
             margin-top: 20px;
         }
+
+        .end-game-screen {
+            text-align: center;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 90vw;
+            max-width: 600px;
+        }
+
+        .end-game-screen h2 {
+            margin-bottom: 20px;
+        }
+
+        .end-game-screen button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
     </style>
 </head>
 <body>
@@ -212,6 +237,15 @@
                 <h1>Can you find the werewolf?</h1>
                 <p>Detective, welcome to Wordleberg. By day, our villagers enjoy word-based games. But by night, a werewolf lurks among us! Tap pairs of villagers to replace them with arrows pointing to the werewolf. Double-tap an emoji to accuse it of being the werewolf. The game ends after one minute. Good luck!</p>
                 <button onClick={onStartGame}>New Game</button>
+            </div>
+        );
+
+        const EndGameScreen = ({ score, onReturnHome, onShare }) => (
+            <div className="end-game-screen">
+                <h2>Game Over!</h2>
+                <p>Your score: {score}</p>
+                <button onClick={onShare}>Share Score</button>
+                <button onClick={onReturnHome}>Return to Home</button>
             </div>
         );
 
@@ -403,19 +437,37 @@
             };
 
             const endGame = (won) => {
-                setTimeout(() => {
-                    setGameState('gameOver');
-                    if (!won) {
-                        const updatedBoard = gameBoard.map(tile => 
-                            tile.id === werewolfIndex ? { ...tile, emoji: werewolfEmoji } : tile
-                        );
-                        setGameBoard(updatedBoard);
-                    }
-                }, 100); // Small delay to prevent accidental game overs
+                setGameState('endGame');
+                // Any other end game logic...
+            };
+
+            const returnToHome = () => {
+                setGameState('home');
+            };
+
+            const shareScore = () => {
+                // Implement sharing functionality
+                // This could open a share dialog or copy a message to clipboard
+                const shareMessage = `I scored ${score} points in Emoji Werewolf Game!`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Emoji Werewolf Game Score',
+                        text: shareMessage,
+                        url: window.location.href,
+                    }).then(() => console.log('Successful share'))
+                    .catch((error) => console.log('Error sharing:', error));
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    alert(shareMessage + "\n\nCopy this message to share your score!");
+                }
             };
 
             if (gameState === 'home') {
                 return <HomeScreen onStartGame={startGame} />;
+            }
+
+            if (gameState === 'endGame') {
+                return <EndGameScreen score={score} onReturnHome={returnToHome} onShare={shareScore} />;
             }
 
             return (
