@@ -12,10 +12,22 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #3D9970; /* Zombie green color */
-            background-image: url('https://example.com/spiderwebs.png'); /* Replace with actual URL */
-            background-size: cover;
-            background-repeat: no-repeat;
+            background-color: #ff9b64; /* Pumpkin color */
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(45deg, rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(-45deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 
+                50px 50px,
+                50px 50px,
+                50px 50px,
+                50px 50px;
+            background-position:
+                -25px -25px,
+                -25px -25px,
+                -25px -25px,
+                -25px -25px;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -164,7 +176,7 @@
             const festiveEmojis = [
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🦌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍🏫', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒',
-                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '👨‍🚀', '👩‍🏭', '👨‍💻', '👩‍💼', '👨‍🏫',
+                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '👨‍🚀', '👩‍🏭', '👨‍💻', '����‍💼', '👨‍🏫',
                 '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨‍✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️',
             ];
             const werewolfEmoji = '🐺';
@@ -286,7 +298,7 @@
                                 isSelected: false,
                                 emoji: t.id === werewolfIndex ? werewolfEmoji : '🙌' // Celebrate
                             })));
-                            setScore(prev => prev + 1);
+                            setScore(prev => prev + 10); // Award 10 points for correct accusation
                         }, 1000);
 
                         setTimeout(() => {
@@ -423,6 +435,5 @@
     </script>
 </body>
 </html>
-
 
 
