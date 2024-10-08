@@ -190,26 +190,20 @@
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Select a unique emoji for the werewolf
-                let werewolfEmoji = shuffledEmojis[numPairs];
-                while (selectedEmojis.includes(werewolfEmoji)) {
-                    werewolfEmoji = shuffledEmojis[Math.floor(Math.random() * shuffledEmojis.length)];
-                }
-                
-                // Add the odd one out (werewolf)
+                // Add the werewolf emoji
                 const allEmojis = [...pairedEmojis, werewolfEmoji];
                 
                 // Shuffle all emojis to randomize positions
                 const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
 
-                // Randomly select the werewolf position
-                const werewolfPosition = Math.floor(Math.random() * totalTiles);
+                // Find the index of the werewolf emoji in the shuffled array
+                const werewolfPosition = shuffledAllEmojis.indexOf(werewolfEmoji);
                 setWerewolfIndex(werewolfPosition);
 
                 // Create the board
                 const board = Array(totalTiles).fill(null).map((_, index) => ({
                     id: index,
-                    emoji: index === werewolfPosition ? werewolfEmoji : shuffledAllEmojis[index],
+                    emoji: shuffledAllEmojis[index],
                     isMatched: false,
                     isSelected: false,
                 }));
@@ -256,7 +250,7 @@
                         const newBoard = gameBoard.map(t => ({ 
                             ...t, 
                             isMatched: true, 
-                            isSelected: false,
+                            isSelected: false, 
                             emoji: '🙌' // Change all tiles to celebrate hands
                         }));
                         setGameBoard(newBoard);
