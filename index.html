@@ -233,13 +233,13 @@
                 if (deltaY === 0) {
                     if (deltaX < 0) return '⬅️';
                     if (deltaX > 0) return '➡️';
+                    return ''; // This case (0,0) should never happen as it would be the werewolf tile
                 }
                 if (deltaY > 0) {
                     if (deltaX < 0) return '↙️';
                     if (deltaX === 0) return '⬇️';
                     return '↘️';
                 }
-                return ''; // This should never happen
             };
 
             const handleTileClick = (tile) => {
@@ -280,23 +280,21 @@
                     const [firstTile, secondTile] = selectedTiles;
                     if (firstTile.emoji === secondTile.emoji) {
                         // Match found
-                        [firstTile, secondTile].forEach(t => {
-                            const matchedTile = newBoard[t.id];
+                        [firstTile.id, secondTile.id].forEach(id => {
+                            const matchedTile = newBoard[id];
                             matchedTile.isMatched = true;
                             matchedTile.isSelected = false;
-                            const deltaX = werewolfIndex % gridSize - t.id % gridSize;
-                            const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(t.id / gridSize);
+                            const deltaX = werewolfIndex % gridSize - id % gridSize;
+                            const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(id / gridSize);
                             matchedTile.emoji = getArrowDirection(deltaX, deltaY);
                         });
                         setScore(prev => prev + 1);
                     } else {
                         // No match, deselect after a delay
                         setTimeout(() => {
-                            setGameBoard(prev => prev.map(t => 
-                                t.id === firstTile.id || t.id === secondTile.id 
-                                    ? { ...t, isSelected: false } 
-                                    : t
-                            ));
+                            newBoard[firstTile.id].isSelected = false;
+                            newBoard[secondTile.id].isSelected = false;
+                            setGameBoard(newBoard);
                         }, 1000);
                     }
                     setSelectedTiles([]);
@@ -380,7 +378,6 @@
     </script>
 </body>
 </html>
-
 
 
 
