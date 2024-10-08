@@ -15,7 +15,11 @@
         body {
             /* Change the font-family to Creepster, with a fallback to cursive */
             font-family: 'Creepster', cursive;
-            background-color: #a1ff1d; /* zombie green */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
             background-image: 
                 linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -31,21 +35,16 @@
                 -25px -25px,
                 -25px -25px,
                 -25px -25px;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
         }
 
-        .game-container {
+        .game-container, .home-screen, .end-game-screen {
             text-align: center;
             padding: 20px;
-            background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             width: 90vw;
             max-width: 600px;
+            color: white; /* Ensure text is visible on dark backgrounds */
         }
 
         .game-board {
@@ -232,16 +231,33 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const HomeScreen = ({ onStartGame }) => (
-            <div className="home-screen">
+        const halloweenColors = [
+            '#ff9b64', // Pumpkin orange
+            '#4a0e4e', // Deep purple
+            '#81b622', // Slime green
+            '#ff6600', // Bright orange
+            '#2e0854', // Midnight purple
+            '#59981A', // Goblin green
+            '#8B008B', // Dark magenta
+            '#FFA500', // Classic orange
+            '#3B0B0B', // Blood red
+            '#7D0541'  // Vampire red
+        ];
+
+        const getRandomColor = () => {
+            return halloweenColors[Math.floor(Math.random() * halloweenColors.length)];
+        };
+
+        const HomeScreen = ({ onStartGame, backgroundColor }) => (
+            <div className="home-screen" style={{ backgroundColor }}>
                 <h1>Can you find the werewolf?</h1>
                 <p>Detective, welcome to Wordleberg. By day, our villagers enjoy word-based games. But by night, a werewolf lurks among us! Tap pairs of villagers to replace them with arrows pointing to the werewolf. Double-tap an emoji to accuse it of being the werewolf. The game ends after one minute. Good luck!</p>
                 <button onClick={onStartGame}>New Game</button>
             </div>
         );
 
-        const EndGameScreen = ({ score, onReturnHome, onShare }) => (
-            <div className="end-game-screen">
+        const EndGameScreen = ({ score, onReturnHome, onShare, backgroundColor }) => (
+            <div className="end-game-screen" style={{ backgroundColor }}>
                 <h2>Game Over!</h2>
                 <p>Your score: {score}</p>
                 <button onClick={onShare}>Share Score</button>
@@ -265,6 +281,7 @@
             const [timer, setTimer] = useState(60);
             const [score, setScore] = useState(0);
             const [werewolfIndex, setWerewolfIndex] = useState(null);
+            const [backgroundColor, setBackgroundColor] = useState(getRandomColor());
 
             useEffect(() => {
                 if (gameState === 'playing' && timer > 0) {
@@ -320,6 +337,7 @@
                 setTimer(60);
                 setScore(0);
                 setSelectedTiles([]);
+                setBackgroundColor(getRandomColor());
                 initializeBoard();
             };
 
@@ -443,12 +461,13 @@
 
             const returnToHome = () => {
                 setGameState('home');
+                setBackgroundColor(getRandomColor());
             };
 
             const shareScore = () => {
                 // Implement sharing functionality
                 // This could open a share dialog or copy a message to clipboard
-                const shareMessage = `I scored ${score} points in Emoji Werewolf Game!`;
+                const shareMessage = `I scored ${score} points in Wolfdle.Com!`;
                 if (navigator.share) {
                     navigator.share({
                         title: 'Emoji Werewolf Game Score',
@@ -463,15 +482,15 @@
             };
 
             if (gameState === 'home') {
-                return <HomeScreen onStartGame={startGame} />;
+                return <HomeScreen onStartGame={startGame} backgroundColor={backgroundColor} />;
             }
 
             if (gameState === 'endGame') {
-                return <EndGameScreen score={score} onReturnHome={returnToHome} onShare={shareScore} />;
+                return <EndGameScreen score={score} onReturnHome={returnToHome} onShare={shareScore} backgroundColor={backgroundColor} />;
             }
 
             return (
-                <div className="game-container">
+                <div className="game-container" style={{ backgroundColor }}>
                     <h1>Emoji Werewolf Game</h1>
                     <div>
                         <span>Time: {timer}s</span> | <span>Score: {score}</span>
@@ -502,5 +521,4 @@
     </script>
 </body>
 </html>
-
 
