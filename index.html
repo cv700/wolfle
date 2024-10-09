@@ -301,6 +301,14 @@
                 }
             }, [gameState, timer]);
 
+            const fisherYatesShuffle = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            };
+
             const initializeBoard = () => {
                 const totalTiles = gridSize * gridSize; // 49 tiles
                 const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
@@ -323,22 +331,23 @@
                 // Shuffle all emojis to further randomize positions
                 const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
 
-                // Find the index of the werewolf emoji in the shuffled array
-                const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
-                setWerewolfIndex(werewolfPosition);
-
-                // Create the board
-                const board = Array(totalTiles).fill(null).map((_, index) => ({
+                let board = Array(totalTiles).fill(null).map((_, index) => ({
                     id: index,
-                    emoji: shuffledAllEmojis[index],
+                    emoji: shuffledAllEmojis[index % shuffledAllEmojis.length],
                     isMatched: false,
                     isSelected: false,
                     lastClickTime: 0
                 }));
 
+                board = fisherYatesShuffle(board);
+
+                // Find the index of the werewolf emoji in the board
+                const werewolfPosition = board.findIndex(tile => tile.emoji === oddOneOut);
+                setWerewolfIndex(werewolfPosition);
+
                 setGameBoard(board);
 
-                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", werewolfEmoji);
+                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", oddOneOut);
             };
 
             const startGame = () => {
