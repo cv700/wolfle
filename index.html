@@ -309,26 +309,26 @@
                 // Select emojis for pairs
                 const selectedEmojis = shuffledEmojis.slice(0, numPairs);
 
-                // Select odd one out
+                // Select odd one out (werewolf in disguise)
                 const oddOneOut = shuffledEmojis.find(emoji => !selectedEmojis.includes(emoji));
                 
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Add the werewolf emoji
+                // Add the odd one out (werewolf in disguise)
                 const allEmojis = [...pairedEmojis, oddOneOut];
                 
                 // Shuffle all emojis to randomize positions
                 const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
 
-                // Find the index of the werewolf emoji in the shuffled array
+                // Find the index of the odd one out (werewolf in disguise) in the shuffled array
                 const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
                 setWerewolfIndex(werewolfPosition);
 
                 // Create the board
-                const board = Array(totalTiles).fill(null).map((_, index) => ({
+                const board = shuffledAllEmojis.map((emoji, index) => ({
                     id: index,
-                    emoji: shuffledAllEmojis[index],
+                    emoji: emoji,
                     isMatched: false,
                     isSelected: false,
                     lastClickTime: 0
@@ -336,7 +336,7 @@
 
                 setGameBoard(board);
 
-                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", werewolfEmoji);
+                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf disguise:", oddOneOut);
             };
 
             const startGame = () => {
@@ -393,6 +393,11 @@
 
                     if (tile.id === werewolfIndex) {
                         // Correct accusation
+                        setGameBoard(prev => prev.map(t => 
+                            t.id === werewolfIndex 
+                                ? { ...t, emoji: werewolfEmoji, isMatched: true } 
+                                : t
+                        ));
                         setTimeout(() => {
                             setGameBoard(prev => prev.map(t => ({
                                 ...t,
