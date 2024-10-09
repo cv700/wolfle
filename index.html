@@ -309,16 +309,38 @@
                 return array;
             };
 
-            const shuffleRowWise = (array, rowSize) => {
-                for (let i = 0; i < array.length; i += rowSize) {
-                    const row = array.slice(i, i + rowSize);
-                    for (let j = row.length - 1; j > 0; j--) {
-                        const k = Math.floor(Math.random() * (j + 1));
-                        [row[j], row[k]] = [row[k], row[j]];
+            const spiralDistribute = (emojis, size) => {
+                const result = Array(size * size).fill(null);
+                let top = 0, bottom = size - 1, left = 0, right = size - 1;
+                let index = 0;
+
+                while (top <= bottom && left <= right) {
+                    for (let i = left; i <= right; i++) {
+                        result[top * size + i] = emojis[index++ % emojis.length];
                     }
-                    array.splice(i, rowSize, ...row);
+                    top++;
+
+                    for (let i = top; i <= bottom; i++) {
+                        result[i * size + right] = emojis[index++ % emojis.length];
+                    }
+                    right--;
+
+                    if (top <= bottom) {
+                        for (let i = right; i >= left; i--) {
+                            result[bottom * size + i] = emojis[index++ % emojis.length];
+                        }
+                        bottom--;
+                    }
+
+                    if (left <= right) {
+                        for (let i = bottom; i >= top; i--) {
+                            result[i * size + left] = emojis[index++ % emojis.length];
+                        }
+                        left++;
+                    }
                 }
-                return array;
+
+                return result;
             };
 
             const initializeBoard = () => {
@@ -341,12 +363,11 @@
                 allEmojis.splice(randomPosition, 0, oddOneOut);
                 
                 // Shuffle all emojis to further randomize positions
-                const shuffledAllEmojis = shuffleRowWise(allEmojis, gridSize);
+                const spiralEmojis = spiralDistribute(allEmojis, gridSize);
 
-                // Create the board with even distribution across rows
                 const board = Array(totalTiles).fill(null).map((_, index) => ({
                     id: index,
-                    emoji: shuffledAllEmojis[index],
+                    emoji: spiralEmojis[index],
                     isMatched: false,
                     isSelected: false,
                     lastClickTime: 0
