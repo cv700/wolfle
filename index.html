@@ -309,6 +309,18 @@
                 return array;
             };
 
+            const shuffleRowWise = (array, rowSize) => {
+                for (let i = 0; i < array.length; i += rowSize) {
+                    const row = array.slice(i, i + rowSize);
+                    for (let j = row.length - 1; j > 0; j--) {
+                        const k = Math.floor(Math.random() * (j + 1));
+                        [row[j], row[k]] = [row[k], row[j]];
+                    }
+                    array.splice(i, rowSize, ...row);
+                }
+                return array;
+            };
+
             const initializeBoard = () => {
                 const totalTiles = gridSize * gridSize; // 49 tiles
                 const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
@@ -329,21 +341,16 @@
                 allEmojis.splice(randomPosition, 0, oddOneOut);
                 
                 // Shuffle all emojis to further randomize positions
-                const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
+                const shuffledAllEmojis = shuffleRowWise(allEmojis, gridSize);
 
                 // Create the board with even distribution across rows
-                const board = Array(totalTiles).fill(null).map((_, index) => {
-                    const row = Math.floor(index / gridSize);
-                    const col = index % gridSize;
-                    const adjustedIndex = col * gridSize + row; // This ensures even distribution across rows
-                    return {
-                        id: index,
-                        emoji: shuffledAllEmojis[adjustedIndex % shuffledAllEmojis.length],
-                        isMatched: false,
-                        isSelected: false,
-                        lastClickTime: 0
-                    };
-                });
+                const board = Array(totalTiles).fill(null).map((_, index) => ({
+                    id: index,
+                    emoji: shuffledAllEmojis[index],
+                    isMatched: false,
+                    isSelected: false,
+                    lastClickTime: 0
+                }));
 
                 // Find the index of the werewolf emoji in the board
                 const werewolfPosition = board.findIndex(tile => tile.emoji === oddOneOut);
