@@ -278,7 +278,7 @@
             const festiveEmojis = [
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🧌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍⚕️', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒',
-                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '👨‍🚀', '👩‍🏭', '👨‍💻', '🧕', '👨‍🏫',
+                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '����‍🚀', '👩‍🏭', '👨‍💻', '🧕', '👨‍🏫',
                 '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨‍✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️',
             ];
             const werewolfEmoji = '🐺';
@@ -341,23 +341,23 @@
 
                 // Find the werewolf position
                 const werewolfPosition = board.findIndex(tile => tile.emoji === oddOneOut);
-                setGameBoard(prev => ({ ...prev, tiles: board, werewolfIndex: werewolfPosition }));
-
-                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf disguise:", oddOneOut);
+                
+                // Debugging information
+                console.log("Odd one out (werewolf disguise):", oddOneOut);
+                console.log("Werewolf position:", werewolfPosition);
                 console.log("Werewolf row:", Math.floor(werewolfPosition / gridSize));
                 console.log("Werewolf column:", werewolfPosition % gridSize);
-                console.log("Werewolf original index:", board[werewolfPosition].originalIndex);
-
-                // Visual representation of the board
-                let visualBoard = '';
-                for (let i = 0; i < gridSize; i++) {
-                    for (let j = 0; j < gridSize; j++) {
-                        const index = i * gridSize + j;
-                        visualBoard += index === werewolfPosition ? '🐺' : '⬜';
+                
+                // Distribution check
+                const rowDistribution = Array(gridSize).fill(0);
+                board.forEach((tile, index) => {
+                    if (tile.emoji === oddOneOut) {
+                        rowDistribution[Math.floor(index / gridSize)]++;
                     }
-                    visualBoard += '\n';
-                }
-                console.log(visualBoard);
+                });
+                console.log("Row distribution of werewolf over multiple games:", rowDistribution);
+
+                setGameBoard(prev => ({ ...prev, tiles: board, werewolfIndex: werewolfPosition }));
 
                 return { board, werewolfPosition };
             };
