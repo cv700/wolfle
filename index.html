@@ -315,10 +315,12 @@
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Add the werewolf emoji
-                const allEmojis = [...pairedEmojis, oddOneOut];
+                // Randomize the position of the odd one out (werewolf)
+                const allEmojis = [...pairedEmojis];
+                const randomPosition = Math.floor(Math.random() * (allEmojis.length + 1));
+                allEmojis.splice(randomPosition, 0, oddOneOut);
                 
-                // Shuffle all emojis to randomize positions
+                // Shuffle all emojis to further randomize positions
                 const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
 
                 // Find the index of the werewolf emoji in the shuffled array
