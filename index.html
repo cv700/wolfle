@@ -312,39 +312,38 @@
             const initializeBoard = () => {
                 const totalTiles = gridSize * gridSize; // 49 tiles
                 const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
-                const shuffledEmojis = [...festiveEmojis].sort(() => 0.5 - Math.random());
+                const shuffledEmojis = shuffleArray([...festiveEmojis]);
                 
                 // Select emojis for pairs
                 const selectedEmojis = shuffledEmojis.slice(0, numPairs);
 
                 // Select odd one out
-                const oddOneOut = shuffledEmojis.find(emoji => !selectedEmojis.includes(emoji));
+                const oddOneOut = shuffledEmojis[numPairs];
                 
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Add the werewolf emoji
-                const allEmojis = [...pairedEmojis, oddOneOut];
-                
-                // Shuffle all emojis to randomize positions
-                const shuffledAllEmojis = shuffleArray(allEmojis);
+                // Create the board with all paired emojis
+                const board = shuffleArray([...pairedEmojis, ...Array(totalTiles - pairedEmojis.length * 2).fill(null)]);
 
-                // Find the index of the werewolf emoji in the shuffled array
-                const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
+                // Insert the oddOneOut at a random position
+                const werewolfPosition = Math.floor(Math.random() * totalTiles);
+                board[werewolfPosition] = oddOneOut;
+
                 setWerewolfIndex(werewolfPosition);
 
-                // Create the board
-                const board = Array(totalTiles).fill(null).map((_, index) => ({
+                // Create the final board
+                const finalBoard = board.map((emoji, index) => ({
                     id: index,
-                    emoji: shuffledAllEmojis[index],
+                    emoji: emoji,
                     isMatched: false,
                     isSelected: false,
                     lastClickTime: 0
                 }));
 
-                setGameBoard(board);
+                setGameBoard(finalBoard);
 
-                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", werewolfEmoji);
+                console.log("Board created:", finalBoard.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", oddOneOut);
             };
 
             const startGame = () => {
