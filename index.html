@@ -303,40 +303,43 @@
 
             const initializeBoard = () => {
                 const totalTiles = gridSize * gridSize; // 49 tiles
-                const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
                 const shuffledEmojis = [...festiveEmojis].sort(() => 0.5 - Math.random());
                 
-                // Select emojis for pairs
-                const selectedEmojis = shuffledEmojis.slice(0, numPairs);
-
-                // Select odd one out
-                const oddOneOut = shuffledEmojis.find(emoji => !selectedEmojis.includes(emoji));
+                // Select odd one out (werewolf in disguise)
+                const oddOneOut = shuffledEmojis[0];
                 
-                // Create pairs
-                const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
+                // Create the board with all emojis, including the odd one out
+                const boardEmojis = shuffledEmojis.slice(0, totalTiles);
                 
-                // Add the werewolf emoji
-                const allEmojis = [...pairedEmojis, oddOneOut];
-                
-                // Shuffle all emojis to randomize positions
-                const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
-
-                // Find the index of the werewolf emoji in the shuffled array
-                const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
-                setWerewolfIndex(werewolfPosition);
+                // Shuffle the entire board
+                const shuffledBoard = boardEmojis
+                    .map((emoji, index) => ({ emoji, index }))
+                    .sort(() => 0.5 - Math.random());
 
                 // Create the board
-                const board = Array(totalTiles).fill(null).map((_, index) => ({
+                const board = shuffledBoard.map((item, index) => ({
                     id: index,
-                    emoji: shuffledAllEmojis[index],
+                    emoji: item.emoji,
                     isMatched: false,
                     isSelected: false,
                     lastClickTime: 0
                 }));
 
-                setGameBoard(board);
+                // Find the werewolf position
+                const newWerewolfIndex = board.findIndex(tile => tile.emoji === oddOneOut);
+                
+                // Update the werewolfIndex state
+                setWerewolfIndex(newWerewolfIndex);
+                
+                // Debugging information
+                console.log("Odd one out (werewolf disguise):", oddOneOut);
+                console.log("Werewolf position:", newWerewolfIndex);
+                console.log("Werewolf row:", Math.floor(newWerewolfIndex / gridSize));
+                console.log("Werewolf column:", newWerewolfIndex % gridSize);
+                
+                setGameBoard({ tiles: board, werewolfIndex: newWerewolfIndex });
 
-                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", werewolfEmoji);
+                return board;
             };
 
             const startGame = () => {
