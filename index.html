@@ -259,7 +259,10 @@
             <div className="home-screen" style={{ backgroundColor }}>
                 <h1>Can you find the werewolf?</h1>
                 <p className="instructions">Detective, welcome to Wordleberg. By day, our villagers enjoy word-based games. But by night, a werewolf lurks among us! Tap pairs of villagers to replace them with arrows pointing to the werewolf. Double-tap an emoji to accuse it of being the werewolf. The game ends after one minute. Good luck!</p>
-                <button onClick={onStartGame}>New Game</button>
+                <button onClick={() => {
+                    console.log("Start Game button clicked");
+                    onStartGame();
+                }}>New Game</button>
             </div>
         );
 
@@ -301,6 +304,10 @@
                 }
             }, [gameState, timer]);
 
+            useEffect(() => {
+                console.log("Game board state changed:", gameBoard);
+            }, [gameBoard]);
+
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -310,25 +317,34 @@
             }
 
             const initializeBoard = () => {
+                console.log("Initializing board...");
                 const totalTiles = gridSize * gridSize; // 49 tiles
                 const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
+                console.log("Total tiles:", totalTiles, "Number of pairs:", numPairs);
+
                 const shuffledEmojis = shuffleArray([...festiveEmojis]);
+                console.log("Shuffled emojis:", shuffledEmojis);
                 
                 // Select emojis for pairs
                 const selectedEmojis = shuffledEmojis.slice(0, numPairs);
+                console.log("Selected emojis for pairs:", selectedEmojis);
 
                 // Select odd one out
                 const oddOneOut = shuffledEmojis[numPairs];
+                console.log("Odd one out:", oddOneOut);
                 
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
+                console.log("Paired emojis:", pairedEmojis);
                 
                 // Create the board with all paired emojis
                 const board = shuffleArray([...pairedEmojis, ...Array(totalTiles - pairedEmojis.length * 2).fill(null)]);
+                console.log("Initial board:", board);
 
                 // Insert the oddOneOut at a random position
                 const werewolfPosition = Math.floor(Math.random() * totalTiles);
                 board[werewolfPosition] = oddOneOut;
+                console.log("Werewolf position:", werewolfPosition);
 
                 setWerewolfIndex(werewolfPosition);
 
@@ -341,18 +357,23 @@
                     lastClickTime: 0
                 }));
 
+                console.log("Final board:", finalBoard);
+
                 setGameBoard(finalBoard);
 
-                console.log("Board created:", finalBoard.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", oddOneOut);
+                console.log("Board initialization complete.");
             };
 
             const startGame = () => {
+                console.log("Starting new game...");
                 setGameState('playing');
                 setTimer(60);
                 setScore(0);
                 setSelectedTiles([]);
                 setBackgroundColor(getRandomColor());
+                console.log("About to initialize board...");
                 initializeBoard();
+                console.log("Board initialization called.");
             };
 
             const getArrowDirection = (deltaX, deltaY) => {
