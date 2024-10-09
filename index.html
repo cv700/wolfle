@@ -301,6 +301,14 @@
                 }
             }, [gameState, timer]);
 
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
             const initializeBoard = () => {
                 const totalTiles = gridSize * gridSize; // 49 tiles
                 const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
@@ -319,7 +327,7 @@
                 const allEmojis = [...pairedEmojis, oddOneOut];
                 
                 // Shuffle all emojis to randomize positions
-                const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
+                const shuffledAllEmojis = shuffleArray(allEmojis);
 
                 // Find the index of the werewolf emoji in the shuffled array
                 const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
