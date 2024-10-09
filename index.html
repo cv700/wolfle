@@ -331,58 +331,27 @@
                     let top = 0, bottom = size - 1, left = 0, right = size - 1;
                     let index = 0;
 
-                    const isAdjacent = (pos, emoji) => {
-                        const row = Math.floor(pos / size);
-                        const col = pos % size;
-                        const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-                        return directions.some(([dx, dy]) => {
-                            const newRow = row + dx;
-                            const newCol = col + dy;
-                            if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size) {
-                                const adjacentPos = newRow * size + newCol;
-                                return result[adjacentPos] === emoji;
-                            }
-                            return false;
-                        });
-                    };
-
                     while (top <= bottom && left <= right) {
                         for (let i = left; i <= right; i++) {
-                            let emoji;
-                            do {
-                                emoji = emojis[index++ % emojis.length];
-                            } while (isAdjacent(top * size + i, emoji));
-                            result[top * size + i] = emoji;
+                            result[top * size + i] = emojis[index++ % emojis.length];
                         }
                         top++;
 
                         for (let i = top; i <= bottom; i++) {
-                            let emoji;
-                            do {
-                                emoji = emojis[index++ % emojis.length];
-                            } while (isAdjacent(i * size + right, emoji));
-                            result[i * size + right] = emoji;
+                            result[i * size + right] = emojis[index++ % emojis.length];
                         }
                         right--;
 
                         if (top <= bottom) {
                             for (let i = right; i >= left; i--) {
-                                let emoji;
-                                do {
-                                    emoji = emojis[index++ % emojis.length];
-                                } while (isAdjacent(bottom * size + i, emoji));
-                                result[bottom * size + i] = emoji;
+                                result[bottom * size + i] = emojis[index++ % emojis.length];
                             }
                             bottom--;
                         }
 
                         if (left <= right) {
                             for (let i = bottom; i >= top; i--) {
-                                let emoji;
-                                do {
-                                    emoji = emojis[index++ % emojis.length];
-                                } while (isAdjacent(i * size + left, emoji));
-                                result[i * size + left] = emoji;
+                                result[i * size + left] = emojis[index++ % emojis.length];
                             }
                             left++;
                         }
