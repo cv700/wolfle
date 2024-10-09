@@ -278,15 +278,16 @@
             const festiveEmojis = [
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🧌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍⚕️', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒',
-                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '‍🚀', '👩‍🏭', '👨‍💻', '🧕', '👨‍🏫',
+                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '👨‍🚀', '👩‍🏭', '👨‍💻', '🧕', '👨‍🏫',
                 '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨‍✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️',
             ];
             const werewolfEmoji = '🐺';
 
-            const [gameBoard, setGameBoard] = useState({ tiles: [], werewolfIndex: null });
+            const [gameBoard, setGameBoard] = useState([]);
             const [selectedTiles, setSelectedTiles] = useState([]);
             const [timer, setTimer] = useState(60);
             const [score, setScore] = useState(0);
+            const [werewolfIndex, setWerewolfIndex] = useState(null);
             const [backgroundColor, setBackgroundColor] = useState(getRandomColor());
 
             useEffect(() => {
@@ -300,49 +301,42 @@
                 }
             }, [gameState, timer]);
 
-            useEffect(() => {
-                if (gameBoard.werewolfIndex !== null) {
-                    // Perform actions that depend on werewolfIndex
-                    console.log("Werewolf is at position:", gameBoard.werewolfIndex);
-                }
-            }, [gameBoard.werewolfIndex]);
-
             const initializeBoard = () => {
                 const totalTiles = gridSize * gridSize; // 49 tiles
+                const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
                 const shuffledEmojis = [...festiveEmojis].sort(() => 0.5 - Math.random());
                 
-                // Select odd one out (werewolf in disguise)
-                const oddOneOut = shuffledEmojis[0];
+                // Select emojis for pairs
+                const selectedEmojis = shuffledEmojis.slice(0, numPairs);
+
+                // Select odd one out
+                const oddOneOut = shuffledEmojis.find(emoji => !selectedEmojis.includes(emoji));
                 
-                // Create the board with all emojis, including the odd one out
-                const boardEmojis = shuffledEmojis.slice(0, totalTiles);
+                // Create pairs
+                const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Shuffle the entire board
-                const shuffledBoard = boardEmojis
-                    .map((emoji, index) => ({ emoji, index }))
-                    .sort(() => 0.5 - Math.random());
+                // Add the werewolf emoji
+                const allEmojis = [...pairedEmojis, oddOneOut];
+                
+                // Shuffle all emojis to randomize positions
+                const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
+
+                // Find the index of the werewolf emoji in the shuffled array
+                const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
+                setWerewolfIndex(werewolfPosition);
 
                 // Create the board
-                const board = shuffledBoard.map((item, index) => ({
+                const board = Array(totalTiles).fill(null).map((_, index) => ({
                     id: index,
-                    emoji: item.emoji,
+                    emoji: shuffledAllEmojis[index],
                     isMatched: false,
                     isSelected: false,
                     lastClickTime: 0
                 }));
 
-                // Find the werewolf position
-                const werewolfPosition = board.findIndex(tile => tile.emoji === oddOneOut);
-                
-                // Debugging information
-                console.log("Odd one out (werewolf disguise):", oddOneOut);
-                console.log("Werewolf position:", werewolfPosition);
-                console.log("Werewolf row:", Math.floor(werewolfPosition / gridSize));
-                console.log("Werewolf column:", werewolfPosition % gridSize);
-                
-                setGameBoard(prev => ({ ...prev, tiles: board, werewolfIndex: werewolfPosition }));
+                setGameBoard(board);
 
-                return { board, werewolfPosition };
+                console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", werewolfEmoji);
             };
 
             const startGame = () => {
@@ -375,45 +369,96 @@
             const handleTileClick = (tile) => {
                 if (gameState !== 'playing' || tile.isMatched) return;
 
-                const newBoard = [...gameBoard.tiles];
+                const newBoard = [...gameBoard];
                 const clickedTile = newBoard[tile.id];
 
                 // Check for double click (accusation)
                 const now = new Date().getTime();
                 if (clickedTile.lastClickTime && (now - clickedTile.lastClickTime < 300)) {
                     // Double click detected - handle accusation
-                    const werewolfTile = newBoard[gameBoard.werewolfIndex];
+                    const werewolfTile = newBoard[werewolfIndex];
                     werewolfTile.emoji = werewolfEmoji; // Replace odd one out with werewolf emoji
                     werewolfTile.isMatched = true;
                     werewolfTile.isFlashing = true; // Add a flashing state
 
                     // Start flashing animation
-                    setGameBoard(prev => ({ ...prev, tiles: newBoard }));
+                    setGameBoard(newBoard);
 
                     // Stop flashing after 1 second
                     setTimeout(() => {
-                        setGameBoard(prev => ({
-                            ...prev,
-                            tiles: prev.tiles.map(t => 
-                                t.id === gameBoard.werewolfIndex ? { ...t, isFlashing: false } : t
-                            )
-                        }));
+                        setGameBoard(prev => prev.map(t => 
+                            t.id === werewolfIndex ? { ...t, isFlashing: false } : t
+                        ));
                     }, 1000);
 
-                    if (tile.id === gameBoard.werewolfIndex) {
+                    if (tile.id === werewolfIndex) {
                         // Correct accusation
-                        // ... (accusation handling code)
+                        setTimeout(() => {
+                            setGameBoard(prev => prev.map(t => ({
+                                ...t,
+                                isMatched: true,
+                                isSelected: false,
+                                emoji: t.id === werewolfIndex ? werewolfEmoji : '🙌' // Celebrate
+                            })));
+                            setScore(prev => prev + 10); // Award 10 points for correct accusation
+                        }, 1000);
+
+                        setTimeout(() => {
+                            initializeBoard();
+                        }, 2000);
                     } else {
                         // Incorrect accusation
-                        // ... (incorrect accusation handling code)
+                        setTimeout(() => {
+                            setGameBoard(prev => prev.map(t => ({
+                                ...t,
+                                isMatched: t.id === werewolfIndex || t.id === tile.id,
+                                isSelected: false
+                            })));
+                            endGame(false);
+                        }, 1000);
                     }
                     setSelectedTiles([]);
                 } else {
                     // Single click - handle selection and matching
-                    // ... (selection and matching code)
+                    clickedTile.isSelected = !clickedTile.isSelected;
+                    clickedTile.lastClickTime = now;
+
+                    if (clickedTile.isSelected) {
+                        setSelectedTiles(prev => [...prev, clickedTile]);
+                    } else {
+                        setSelectedTiles(prev => prev.filter(t => t.id !== clickedTile.id));
+                    }
+
+                    // Check for a match if we have two selected tiles
+                    if (selectedTiles.length === 1) {
+                        const [firstTile] = selectedTiles;
+                        if (firstTile.emoji === clickedTile.emoji && firstTile.id !== clickedTile.id) {
+                            // Match found
+                            [firstTile.id, clickedTile.id].forEach(id => {
+                                const matchedTile = newBoard[id];
+                                matchedTile.isMatched = true;
+                                matchedTile.isSelected = false;
+                                const deltaX = werewolfIndex % gridSize - id % gridSize;
+                                const deltaY = Math.floor(werewolfIndex / gridSize) - Math.floor(id / gridSize);
+                                matchedTile.emoji = getArrowDirection(deltaX, deltaY);
+                            });
+                            setScore(prev => prev + 1);
+                            setSelectedTiles([]);
+                        } else if (selectedTiles.length === 2) {
+                            // No match, deselect after a delay
+                            setTimeout(() => {
+                                setGameBoard(prev => prev.map(t => 
+                                    selectedTiles.some(selected => selected.id === t.id)
+                                        ? { ...t, isSelected: false }
+                                        : t
+                                ));
+                                setSelectedTiles([]);
+                            }, 1000);
+                        }
+                    }
                 }
 
-                setGameBoard(prev => ({ ...prev, tiles: newBoard }));
+                setGameBoard(newBoard);
             };
 
             const endGame = (won) => {
@@ -454,7 +499,7 @@
                     <div className="game-board" style={{
                         gridTemplateColumns: `repeat(${gridSize}, 1fr)`
                     }}>
-                        {gameBoard.tiles.map(tile => (
+                        {gameBoard.map(tile => (
                             <div 
                                 key={tile.id} 
                                 className={`tile 
