@@ -323,8 +323,8 @@
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Add the odd one out
-                const allEmojis = [...pairedEmojis, oddOneOut];
+                // Shuffle all emojis
+                const shuffledAllEmojis = pairedEmojis.sort(() => 0.5 - Math.random());
 
                 const spiralDistribute = (emojis, size) => {
                     const result = Array(size * size).fill(null);
@@ -391,7 +391,11 @@
                     return result;
                 };
 
-                const spiralEmojis = spiralDistribute(allEmojis, gridSize);
+                const spiralEmojis = spiralDistribute(shuffledAllEmojis, gridSize);
+
+                // Randomly place the werewolf
+                const werewolfPosition = Math.floor(Math.random() * totalTiles);
+                spiralEmojis[werewolfPosition] = oddOneOut;
 
                 const board = Array(totalTiles).fill(null).map((_, index) => ({
                     id: index,
@@ -435,10 +439,7 @@
 
                 const shuffledBoard = shuffleNeighbors(board);
 
-                // Find the index of the werewolf emoji in the board
-                const werewolfPosition = shuffledBoard.findIndex(tile => tile.emoji === oddOneOut);
                 setWerewolfIndex(werewolfPosition);
-
                 setGameBoard(shuffledBoard);
 
                 console.log("Board created:", shuffledBoard.length, "Werewolf position:", werewolfPosition, "Werewolf emoji:", oddOneOut);
