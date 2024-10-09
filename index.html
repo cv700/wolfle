@@ -279,7 +279,7 @@
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🧌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍⚕️', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒',
                 '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '👨‍🚀', '👩‍🏭', '👨‍💻', '🧕', '👨‍🏫',
-                '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨‍✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️',
+                '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️',
             ];
             const werewolfEmoji = '🐺';
 
@@ -356,11 +356,24 @@
                         });
                     };
 
+                    const emojiCounts = board.reduce((counts, tile) => {
+                        counts[tile.emoji] = (counts[tile.emoji] || 0) + 1;
+                        return counts;
+                    }, {});
+
                     for (let i = 0; i < board.length; i++) {
                         if (hasAdjacentMatch(i)) {
                             for (let j = 0; j < board.length; j++) {
-                                if (i !== j && board[i].emoji !== board[j].emoji && !hasAdjacentMatch(j)) {
+                                if (i !== j && 
+                                    board[i].emoji !== board[j].emoji && 
+                                    !hasAdjacentMatch(j) &&
+                                    emojiCounts[board[i].emoji] <= 2 &&
+                                    emojiCounts[board[j].emoji] <= 2) {
+                                    emojiCounts[board[i].emoji]--;
+                                    emojiCounts[board[j].emoji]--;
                                     [board[i].emoji, board[j].emoji] = [board[j].emoji, board[i].emoji];
+                                    emojiCounts[board[i].emoji]++;
+                                    emojiCounts[board[j].emoji]++;
                                     break;
                                 }
                             }
@@ -370,6 +383,18 @@
                 };
 
                 const shuffledBoard = shuffleNeighbors(board);
+
+                // Verify no triplicates
+                const finalEmojiCounts = shuffledBoard.reduce((counts, tile) => {
+                    counts[tile.emoji] = (counts[tile.emoji] || 0) + 1;
+                    return counts;
+                }, {});
+
+                const hasTriplicates = Object.values(finalEmojiCounts).some(count => count > 2);
+                if (hasTriplicates) {
+                    console.error("Triplicates detected! Reinitializing board.");
+                    return initializeBoard(); // Recursively try again
+                }
 
                 setWerewolfIndex(werewolfPosition);
                 setGameBoard(shuffledBoard);
