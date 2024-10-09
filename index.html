@@ -310,33 +310,45 @@
                 const selectedEmojis = shuffledEmojis.slice(0, numPairs);
 
                 // Select odd one out (werewolf in disguise)
-                const oddOneOut = shuffledEmojis.find(emoji => !selectedEmojis.includes(emoji));
+                const oddOneOut = shuffledEmojis[numPairs];
                 
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Add the odd one out (werewolf in disguise)
-                const allEmojis = [...pairedEmojis, oddOneOut];
+                // Create the board with pairs and odd one out
+                const boardEmojis = [...pairedEmojis, oddOneOut];
                 
-                // Shuffle all emojis to randomize positions
-                const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
-
-                // Find the index of the odd one out (werewolf in disguise) in the shuffled array
-                const werewolfPosition = shuffledAllEmojis.indexOf(oddOneOut);
-                setWerewolfIndex(werewolfPosition);
+                // Shuffle the board emojis along with their indices
+                const shuffledBoard = boardEmojis
+                    .map((emoji, index) => ({ emoji, originalIndex: index }))
+                    .sort(() => 0.5 - Math.random());
 
                 // Create the board
-                const board = shuffledAllEmojis.map((emoji, index) => ({
+                const board = shuffledBoard.map((item, index) => ({
                     id: index,
-                    emoji: emoji,
+                    originalIndex: item.originalIndex,
+                    emoji: item.emoji,
                     isMatched: false,
                     isSelected: false,
                     lastClickTime: 0
                 }));
 
+                // Find the werewolf position
+                const werewolfPosition = board.findIndex(tile => tile.emoji === oddOneOut);
+                setWerewolfIndex(werewolfPosition);
+
                 setGameBoard(board);
 
                 console.log("Board created:", board.length, "Werewolf position:", werewolfPosition, "Werewolf disguise:", oddOneOut);
+                console.log("Werewolf original index:", board[werewolfPosition].originalIndex);
+
+                // Add this at the end of initializeBoard
+                console.log("Full board:", board.map(tile => `${tile.id}:${tile.emoji}`).join(", "));
+                console.log("Tiles with originalIndex > 20:", 
+                    board.filter(tile => tile.originalIndex > 20)
+                         .map(tile => `${tile.id}:${tile.emoji}`)
+                         .join(", ")
+                );
             };
 
             const startGame = () => {
