@@ -309,43 +309,9 @@
                 return array;
             };
 
-            const spiralDistribute = (emojis, size) => {
-                const result = Array(size * size).fill(null);
-                let top = 0, bottom = size - 1, left = 0, right = size - 1;
-                let index = 0;
-
-                while (top <= bottom && left <= right) {
-                    for (let i = left; i <= right; i++) {
-                        result[top * size + i] = emojis[index++ % emojis.length];
-                    }
-                    top++;
-
-                    for (let i = top; i <= bottom; i++) {
-                        result[i * size + right] = emojis[index++ % emojis.length];
-                    }
-                    right--;
-
-                    if (top <= bottom) {
-                        for (let i = right; i >= left; i--) {
-                            result[bottom * size + i] = emojis[index++ % emojis.length];
-                        }
-                        bottom--;
-                    }
-
-                    if (left <= right) {
-                        for (let i = bottom; i >= top; i--) {
-                            result[i * size + left] = emojis[index++ % emojis.length];
-                        }
-                        left++;
-                    }
-                }
-
-                return result;
-            };
-
             const initializeBoard = () => {
-                const totalTiles = gridSize * gridSize; // 49 tiles
-                const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
+                const totalTiles = gridSize * gridSize;
+                const numPairs = Math.floor((totalTiles - 1) / 2);
                 const shuffledEmojis = [...festiveEmojis].sort(() => 0.5 - Math.random());
                 
                 // Select emojis for pairs
@@ -357,12 +323,74 @@
                 // Create pairs
                 const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
                 
-                // Randomize the position of the odd one out (werewolf)
-                const allEmojis = [...pairedEmojis];
-                const randomPosition = Math.floor(Math.random() * (allEmojis.length + 1));
-                allEmojis.splice(randomPosition, 0, oddOneOut);
-                
-                // Shuffle all emojis to further randomize positions
+                // Add the odd one out
+                const allEmojis = [...pairedEmojis, oddOneOut];
+
+                const spiralDistribute = (emojis, size) => {
+                    const result = Array(size * size).fill(null);
+                    let top = 0, bottom = size - 1, left = 0, right = size - 1;
+                    let index = 0;
+
+                    const isAdjacent = (pos, emoji) => {
+                        const row = Math.floor(pos / size);
+                        const col = pos % size;
+                        const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                        return directions.some(([dx, dy]) => {
+                            const newRow = row + dx;
+                            const newCol = col + dy;
+                            if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size) {
+                                const adjacentPos = newRow * size + newCol;
+                                return result[adjacentPos] === emoji;
+                            }
+                            return false;
+                        });
+                    };
+
+                    while (top <= bottom && left <= right) {
+                        for (let i = left; i <= right; i++) {
+                            let emoji;
+                            do {
+                                emoji = emojis[index++ % emojis.length];
+                            } while (isAdjacent(top * size + i, emoji));
+                            result[top * size + i] = emoji;
+                        }
+                        top++;
+
+                        for (let i = top; i <= bottom; i++) {
+                            let emoji;
+                            do {
+                                emoji = emojis[index++ % emojis.length];
+                            } while (isAdjacent(i * size + right, emoji));
+                            result[i * size + right] = emoji;
+                        }
+                        right--;
+
+                        if (top <= bottom) {
+                            for (let i = right; i >= left; i--) {
+                                let emoji;
+                                do {
+                                    emoji = emojis[index++ % emojis.length];
+                                } while (isAdjacent(bottom * size + i, emoji));
+                                result[bottom * size + i] = emoji;
+                            }
+                            bottom--;
+                        }
+
+                        if (left <= right) {
+                            for (let i = bottom; i >= top; i--) {
+                                let emoji;
+                                do {
+                                    emoji = emojis[index++ % emojis.length];
+                                } while (isAdjacent(i * size + left, emoji));
+                                result[i * size + left] = emoji;
+                            }
+                            left++;
+                        }
+                    }
+
+                    return result;
+                };
+
                 const spiralEmojis = spiralDistribute(allEmojis, gridSize);
 
                 const board = Array(totalTiles).fill(null).map((_, index) => ({
