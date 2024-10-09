@@ -278,7 +278,7 @@
             const festiveEmojis = [
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🧌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍⚕️', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒',
-                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '����‍🚀', '👩‍🏭', '👨‍💻', '🧕', '👨‍🏫',
+                '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '‍🚀', '👩‍🏭', '👨‍💻', '🧕', '👨‍🏫',
                 '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨‍✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️',
             ];
             const werewolfEmoji = '🐺';
@@ -309,30 +309,22 @@
 
             const initializeBoard = () => {
                 const totalTiles = gridSize * gridSize; // 49 tiles
-                const numPairs = Math.floor((totalTiles - 1) / 2); // 24 pairs
                 const shuffledEmojis = [...festiveEmojis].sort(() => 0.5 - Math.random());
                 
-                // Select emojis for pairs
-                const selectedEmojis = shuffledEmojis.slice(0, numPairs);
-
                 // Select odd one out (werewolf in disguise)
-                const oddOneOut = shuffledEmojis[numPairs];
+                const oddOneOut = shuffledEmojis[0];
                 
-                // Create pairs
-                const pairedEmojis = selectedEmojis.flatMap(emoji => [emoji, emoji]);
+                // Create the board with all emojis, including the odd one out
+                const boardEmojis = shuffledEmojis.slice(0, totalTiles);
                 
-                // Create the board with pairs and odd one out
-                const boardEmojis = [...pairedEmojis, oddOneOut];
-                
-                // Shuffle the board emojis along with their indices
+                // Shuffle the entire board
                 const shuffledBoard = boardEmojis
-                    .map((emoji, index) => ({ emoji, originalIndex: index }))
+                    .map((emoji, index) => ({ emoji, index }))
                     .sort(() => 0.5 - Math.random());
 
                 // Create the board
                 const board = shuffledBoard.map((item, index) => ({
                     id: index,
-                    originalIndex: item.originalIndex,
                     emoji: item.emoji,
                     isMatched: false,
                     isSelected: false,
@@ -348,15 +340,6 @@
                 console.log("Werewolf row:", Math.floor(werewolfPosition / gridSize));
                 console.log("Werewolf column:", werewolfPosition % gridSize);
                 
-                // Distribution check
-                const rowDistribution = Array(gridSize).fill(0);
-                board.forEach((tile, index) => {
-                    if (tile.emoji === oddOneOut) {
-                        rowDistribution[Math.floor(index / gridSize)]++;
-                    }
-                });
-                console.log("Row distribution of werewolf over multiple games:", rowDistribution);
-
                 setGameBoard(prev => ({ ...prev, tiles: board, werewolfIndex: werewolfPosition }));
 
                 return { board, werewolfPosition };
