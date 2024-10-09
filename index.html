@@ -311,33 +311,28 @@
                 // Create the board with all emojis, including the odd one out
                 const boardEmojis = shuffledEmojis.slice(0, totalTiles);
                 
-                // Shuffle the entire board
-                const shuffledBoard = boardEmojis
-                    .map((emoji, index) => ({ emoji, index }))
-                    .sort(() => 0.5 - Math.random());
-
+                // Randomly choose the position for the odd one out
+                const oddOneOutPosition = Math.floor(Math.random() * totalTiles);
+                
                 // Create the board
-                const board = shuffledBoard.map((item, index) => ({
+                const board = boardEmojis.map((emoji, index) => ({
                     id: index,
-                    emoji: item.emoji,
+                    emoji: index === oddOneOutPosition ? oddOneOut : emoji,
                     isMatched: false,
                     isSelected: false,
                     lastClickTime: 0
                 }));
 
-                // Find the werewolf position
-                const newWerewolfIndex = board.findIndex(tile => tile.emoji === oddOneOut);
-                
                 // Update the werewolfIndex state
-                setWerewolfIndex(newWerewolfIndex);
+                setWerewolfIndex(oddOneOutPosition);
                 
                 // Debugging information
                 console.log("Odd one out (werewolf disguise):", oddOneOut);
-                console.log("Werewolf position:", newWerewolfIndex);
-                console.log("Werewolf row:", Math.floor(newWerewolfIndex / gridSize));
-                console.log("Werewolf column:", newWerewolfIndex % gridSize);
+                console.log("Odd one out position:", oddOneOutPosition);
+                console.log("Odd one out row:", Math.floor(oddOneOutPosition / gridSize));
+                console.log("Odd one out column:", oddOneOutPosition % gridSize);
                 
-                setGameBoard({ tiles: board, werewolfIndex: newWerewolfIndex });
+                setGameBoard({ tiles: board, werewolfIndex: oddOneOutPosition });
 
                 return board;
             };
