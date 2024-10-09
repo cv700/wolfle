@@ -331,15 +331,19 @@
                 // Shuffle all emojis to further randomize positions
                 const shuffledAllEmojis = allEmojis.sort(() => 0.5 - Math.random());
 
-                let board = Array(totalTiles).fill(null).map((_, index) => ({
-                    id: index,
-                    emoji: shuffledAllEmojis[index % shuffledAllEmojis.length],
-                    isMatched: false,
-                    isSelected: false,
-                    lastClickTime: 0
-                }));
-
-                board = fisherYatesShuffle(board);
+                // Create the board with even distribution across rows
+                const board = Array(totalTiles).fill(null).map((_, index) => {
+                    const row = Math.floor(index / gridSize);
+                    const col = index % gridSize;
+                    const adjustedIndex = col * gridSize + row; // This ensures even distribution across rows
+                    return {
+                        id: index,
+                        emoji: shuffledAllEmojis[adjustedIndex % shuffledAllEmojis.length],
+                        isMatched: false,
+                        isSelected: false,
+                        lastClickTime: 0
+                    };
+                });
 
                 // Find the index of the werewolf emoji in the board
                 const werewolfPosition = board.findIndex(tile => tile.emoji === oddOneOut);
