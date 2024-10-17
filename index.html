@@ -13,48 +13,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
     <style>
         body {
-            /* Change the font-family to Creepster, with a fallback to cursive */
-            font-family: 'Creepster', cursive;
+            margin: 0;
+            padding: 0;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0;
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
-                linear-gradient(45deg, rgba(255,255,255,0.1) 1px, transparent 1px),
-                linear-gradient(-45deg, rgba(255,255,255,0.1) 1px, transparent 1px);
-            background-size: 
-                50px 50px,
-                50px 50px,
-                50px 50px,
-                50px 50px;
-            background-position:
-                -25px -25px,
-                -25px -25px,
-                -25px -25px,
-                -25px -25px;
+            background-color: #f0f0f0; /* Or any color you prefer */
         }
 
-        .game-container, .home-screen, .end-game-screen {
-            text-align: center;
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            width: 90vw;
-            max-width: 600px;
-            color: white; /* Ensure text is visible on dark backgrounds */
+            box-sizing: border-box;
         }
 
         .game-board {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 5px;
-            margin: 20px 0;
-            width: 100%;
-            max-width: 500px; /* Adjust this value as needed */
-            aspect-ratio: 1;
+            width: 90vmin; /* Use vmin to ensure it fits on both wide and tall screens */
+            height: 90vmin;
+            max-width: 600px; /* Adjust this value as needed */
+            max-height: 600px; /* Adjust this value as needed */
         }
 
         .tile {
@@ -78,170 +64,21 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 5vw; /* Responsive font size */
+            font-size: 5vmin; /* Responsive font size */
             font-family: Arial, sans-serif;
         }
 
-        .tile.selected {
-            background-color: #ffd700;
-            border-color: #ff8c00;
-            transform: scale(1.05);
+        /* Adjust other game elements to fit within the container */
+        h1, #score, #timer {
+            margin: 10px 0;
         }
 
-        .tile.matched {
-            background-color: #fff;
-            border-color: #4caf50;
-        }
-
-        .tile.spin {
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .popup {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .popup-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .popup-content h1 {
-            margin-bottom: 20px;
-        }
-
-        .popup-content button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 600px) {
-            .tile::after {
-                font-size: 8vw; /* Larger on small screens */
+        /* Responsive adjustments */
+        @media (max-aspect-ratio: 1/1) {
+            .game-board {
+                width: 90vw;
+                height: 90vw;
             }
-        }
-
-        @keyframes celebrate {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .tile.celebrate {
-            animation: celebrate 0.5s ease-in-out infinite;
-        }
-
-        .tile.accusation-mode {
-            box-shadow: 0 0 10px 5px #ff0000;
-        }
-
-        .accuse-indicator {
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #ff0000;
-            color: white;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-size: 0.8em;
-        }
-
-        @keyframes flash {
-            0%, 50%, 100% { opacity: 1; }
-            25%, 75% { opacity: 0; }
-        }
-
-        .tile.flashing {
-            animation: flash 0.5s linear infinite;
-        }
-
-        /* Add styles for the score to make it more visible */
-        #score {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        .home-screen {
-            text-align: center;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            width: 90vw;
-            max-width: 600px;
-        }
-
-        .home-screen h1 {
-            margin-bottom: 20px;
-        }
-
-        .home-screen button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        .end-game-screen {
-            text-align: center;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            width: 90vw;
-            max-width: 600px;
-        }
-
-        .end-game-screen h2 {
-            margin-bottom: 20px;
-        }
-
-        .end-game-screen button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-        }
-
-        .instructions {
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            line-height: 1.5;
-            margin-bottom: 20px;
         }
     </style>
 </head>
