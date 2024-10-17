@@ -299,7 +299,7 @@
 
             const [gameBoard, setGameBoard] = useState([]);
             const [selectedTiles, setSelectedTiles] = useState([]);
-            const [timer, setTimer] = useState(30);
+            const [timer, setTimer] = useState(30); // Set initial timer to 30 seconds
             const [score, setScore] = useState(0);
             const [werewolfIndex, setWerewolfIndex] = useState(null);
             const [backgroundColor, setBackgroundColor] = useState(getRandomColor());
@@ -417,7 +417,7 @@
 
             const startGame = () => {
                 setGameState('playing');
-                setTimer(60);
+                setTimer(30); // Reset timer to 30 seconds when starting a new game
                 setScore(0);
                 setSelectedTiles([]);
                 setBackgroundColor(getRandomColor());
