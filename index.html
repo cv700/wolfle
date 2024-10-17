@@ -49,6 +49,7 @@
 
         .game-board {
             display: grid;
+            grid-template-columns: repeat(5, 1fr); /* Change this to 5 */
             gap: 5px;
             margin: 20px 0;
             width: 100%;
@@ -274,12 +275,14 @@
 
         const EmojiWerewolfGame = () => {
             const [gameState, setGameState] = useState('home');
-            const gridSize = 7;
+            const gridSize = 5; // Change this to 5
+            const totalTiles = gridSize * gridSize; // This will now be 25
             const festiveEmojis = [
                 '🎃', '👻', '🧟', '🧛', '🧙', '🧚', '🧝', '🦄', '🎅', '🤶', '🧌', '⛄', 
                 '👩‍⚕️', '👨‍🍳', '👩‍⚕️', '👨‍🔬', '👩‍🚀', '👨‍🌾', '👩‍🔧', '👨‍🎨', '👩‍✈️', '👨‍🚒',
                 '👩‍💻', '👨‍🏭', '👩‍🔬', '👨‍💼', '👩‍🎨', '👨‍🚀', '👩‍🏭', '👨‍💻', '🧕', '👨‍🏫',
                 '👩‍⚖️', '👨‍🌾', '👩‍🍳', '👨✈️', '👩‍🚒', '👨‍⚖️', '🕵️‍♀️', '👷‍♂️', '💂‍♀️',
+                '🤠', '🌚' // Added cowboy and dark moon emojis
             ];
             const werewolfEmoji = '🐺';
 
@@ -302,8 +305,7 @@
             }, [gameState, timer]);
 
             const initializeBoard = () => {
-                const totalTiles = gridSize * gridSize;
-                const numPairs = Math.floor((totalTiles - 1) / 2);
+                const numPairs = Math.floor((totalTiles - 1) / 2); // This will now be 12
                 const shuffledEmojis = [...festiveEmojis].sort(() => 0.5 - Math.random());
                 
                 // Select emojis for pairs
