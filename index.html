@@ -49,10 +49,11 @@
 
         .game-board {
             display: grid;
-            grid-template-columns: repeat(5, 1fr); /* Change this to 5 */
+            grid-template-columns: repeat(5, 1fr);
             gap: 5px;
             margin: 20px 0;
             width: 100%;
+            max-width: 500px; /* Adjust this value as needed */
             aspect-ratio: 1;
         }
 
@@ -63,11 +64,21 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
+            font-size: 0; /* Reset font-size */
             cursor: pointer;
             user-select: none;
             transition: transform 0.2s;
-            /* Keep Arial as the font for emojis */
+            aspect-ratio: 1; /* Ensure tile is square */
+            position: relative; /* For absolute positioning of emoji */
+        }
+
+        .tile::after {
+            content: attr(data-emoji);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5vw; /* Responsive font size */
             font-family: Arial, sans-serif;
         }
 
@@ -130,8 +141,8 @@
 
         /* Responsive Adjustments */
         @media (max-width: 600px) {
-            .tile {
-                font-size: 1.5rem;
+            .tile::after {
+                font-size: 8vw; /* Larger on small screens */
             }
         }
 
@@ -574,8 +585,8 @@
                                     ${tile.emoji === '🙌' ? 'celebrate' : ''}`
                                 }
                                 onClick={() => handleTileClick(tile)}
+                                data-emoji={tile.emoji}
                             >
-                                {tile.emoji}
                             </div>
                         ))}
                     </div>
