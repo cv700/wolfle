@@ -270,7 +270,7 @@
         const HomeScreen = ({ onStartGame, backgroundColor }) => (
             <div className="home-screen" style={{ backgroundColor }}>
                 <h1>Can you find the werewolf?</h1>
-                <p className="instructions">Detective, welcome to Wordleberg. By day, our villagers enjoy word-based games. But by night, a werewolf lurks among us! Tap pairs of villagers to replace them with arrows pointing to the werewolf. Double-tap an emoji to accuse it of being the werewolf. The game ends after 30 seconds. Good luck!</p>
+                <p className="instructions">Detective, welcome to Wordleberg. By day, our villagers enjoy word-based games. But by night, a werewolf lurks among us! The werewolf is the odd one out. Tap pairs of villagers and they will provide helpful clues. Double-tap an emoji to accuse it of being the werewolf. The game ends after 30 seconds. Good luck!</p>
                 <button onClick={onStartGame}>New Game</button>
             </div>
         );
